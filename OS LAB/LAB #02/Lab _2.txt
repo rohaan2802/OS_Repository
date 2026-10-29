@@ -1,0 +1,14 @@
+Create a following bash script named as cdf (Create files and directories). The script should receive the following command line arguments and perform the following functions.
+
+=> cdf -f fileName1 fileName2 fileName3  //creates empty text files with the provided fileNames in the current directory
+
+=> cdf -d dirName1 dirName2 dirName3  //creates directories with the provided dirNames in the current directory.
+
+=> cdf -f fileName -d dirName
+=> cdf -d dirName -f fileName  //creates file and a directory with provided file and dir names.
+
+=> cdf -v //prints the current version e.g cdf version 1.0
+
+=> cdf -h //prints the help page same as manual page of other commands on how to use this script.
+
+=> cdf   //prints the error message

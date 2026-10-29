@@ -1,0 +1,202 @@
+// server.cpp
+#include <iostream>
+#include <fstream>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <cstring>
+using namespace std;
+
+const char* PIPE_FROM_CLIENT = "client_to_server";
+const char* PIPE_TO_CLIENT = "server_to_client";
+
+struct BankAccount {
+    int balance = 1000; // initial balance
+};
+
+int main() {
+    mkfifo(PIPE_FROM_CLIENT, 0666);
+    mkfifo(PIPE_TO_CLIENT, 0666);
+
+    BankAccount account;
+    char buffer[1024];
+    bool running = true;
+
+    while (running) {
+        int fd_read = open(PIPE_FROM_CLIENT, O_RDONLY);
+        read(fd_read, buffer, sizeof(buffer));
+        close(fd_read);
+
+        string command(buffer);
+        string response;
+
+        if (command == "check") {
+            response = "Balance: " + to_string(account.balance);
+        } else if (command.rfind("deposit", 0) == 0) {
+            int amount = stoi(command.substr(8));
+            account.balance += amount;
+            response = "Deposited " + to_string(amount) + ", New Balance: " + to_string(account.balance);
+        } else if (command.rfind("withdraw", 0) == 0) {
+            int amount = stoi(command.substr(9));
+            if (amount > account.balance) {
+                response = "Insufficient funds";
+            } else {
+                account.balance -= amount;
+                response = "Withdrew " + to_string(amount) + ", New Balance: " + to_string(account.balance);
+            }
+        } else if (command == "exit") {
+            response = "Exiting server.";
+            running = false;
+        } else {
+            response = "Invalid command.";
+        }
+
+        int fd_write = open(PIPE_TO_CLIENT, O_WRONLY);
+        write(fd_write, response.c_str(), response.length() + 1);
+        close(fd_write);
+    }
+
+    unlink(PIPE_FROM_CLIENT);
+    unlink(PIPE_TO_CLIENT);
+    return 0;
+}
+
+
+============
+
+// client.cpp
+#include <iostream>
+#include <fstream>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <cstring>
+using namespace std;
+
+const char* PIPE_FROM_CLIENT = "client_to_server";
+const char* PIPE_TO_CLIENT = "server_to_client";
+
+int main() {
+    char buffer[1024];
+
+    while (true) {
+        cout << "Enter command (check, deposit <amount>, withdraw <amount>, exit): ";
+        string command;
+        getline(cin, command);
+
+        int fd_write = open(PIPE_FROM_CLIENT, O_WRONLY);
+        write(fd_write, command.c_str(), command.length() + 1);
+        close(fd_write);
+
+        int fd_read = open(PIPE_TO_CLIENT, O_RDONLY);
+        read(fd_read, buffer, sizeof(buffer));
+        close(fd_read);
+
+        cout << "Server: " << buffer << endl;
+
+        if (command == "exit") break;
+    }
+
+    return 0;
+}
+
+
+===========
+
+💡 How to Compile & Run
+Open two terminal windows:
+
+Terminal 1 (Server):
+
+bash
+Copy
+Edit
+g++ server.cpp -o server
+./server
+Terminal 2 (Client):
+
+bash
+Copy
+Edit
+g++ client.cpp -o client
+./client
+
+================
+
+
+// q2_pipes.cpp
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+using namespace std;
+
+int main() {
+    int pipe1[2], pipe2[2];
+    pipe(pipe1); // Parent to child
+    pipe(pipe2); // Child to parent
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Child Process
+        close(pipe1[1]); // close write end of pipe1
+        close(pipe2[0]); // close read end of pipe2
+
+        int numbers[10];
+        read(pipe1[0], numbers, sizeof(numbers)); // read numbers
+
+        for (int i = 0; i < 10; ++i) {
+            numbers[i] *= numbers[i]; // square them
+        }
+
+        write(pipe2[1], numbers, sizeof(numbers)); // send back
+        close(pipe1[0]);
+        close(pipe2[1]);
+    } else {
+        // Parent Process
+        close(pipe1[0]); // close read end of pipe1
+        close(pipe2[1]); // close write end of pipe2
+
+        int nums[10];
+        for (int i = 0; i < 10; ++i) nums[i] = i + 1;
+
+        write(pipe1[1], nums, sizeof(nums)); // send to child
+
+        wait(NULL); // wait for child
+
+        int results[10];
+        read(pipe2[0], results, sizeof(results)); // get results
+        cout << "Squared Numbers from Child: ";
+        for (int i = 0; i < 10; ++i)
+            cout << results[i] << " ";
+        cout << endl;
+
+        close(pipe1[1]);
+        close(pipe2[0]);
+    }
+
+    return 0;
+}
+
+
+=============
+
+
+
+===============
+
+📦 To Compile & Run:
+Q2:
+bash
+Copy
+Edit
+g++ q2_pipes.cpp -o q2
+./q2
+Q3:
+bash
+Copy
+Edit
+g++ q3_exec.cpp -o q3
+./q3 "ls -l" "pwd"
+
+==========
