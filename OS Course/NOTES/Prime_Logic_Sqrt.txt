@@ -1,0 +1,257 @@
+The condition j * j < i is commonly used in algorithms that check for prime numbers. Here’s why:
+
+Understanding the Logic
+When checking if a number i is prime, we typically test if it is divisible by any number j (where 2 ≤ j < i). However, we can optimize this by only checking up to √i, which is where j * j < i comes in.
+
+Why Check Up to √i?
+If i has a factor larger than √i, then the corresponding smaller factor must be less than √i.
+For example:
+
+If i = 36, the factors are {(2,18), (3,12), (4,9), (6,6)}.
+Notice that factors start repeating at 6 × 6.
+We only need to check up to 6 (√36 = 6), because if a number larger than 6 divides 36, its corresponding pair (smaller than 6) would have already been checked.
+Correct Condition
+Instead of j * j < i, the correct stopping condition should be j * j <= i (i.e., j <= sqrt(i)).
+
+Prime Checking Code in C++ Using This Logic
+include <iostream>
+using namespace std;
+
+bool isPrime(int i) {
+    if (i < 2) return false; // Numbers < 2 are not prime
+    for (int j = 2; j * j <= i; j++) { // Check up to sqrt(i)
+        if (i % j == 0) return false; // Found a divisor
+    }
+    return true;
+}
+
+int main() {
+    int num = 29;
+    if (isPrime(num))
+        cout << num << " is a prime number." << endl;
+    else
+        cout << num << " is not a prime number." << endl;
+    return 0;
+}
+Conclusion
+The condition j * j < i should ideally be j * j <= i to ensure we check divisibility correctly up to √i. This optimization significantly reduces the number of iterations compared to checking all numbers up to i-1.
+
+Q: Still not understand how square root of i iterations should ensure prime number?
+----------------------------------------------------------------------
+Let me explain in a more intuitive way why checking up to the square root of i is enough to determine if i is a prime number.
+
+Understanding Factors
+A number i is prime if it is only divisible by 1 and itself. That means it has no divisors other than these two.
+
+If a number is not prime, then it must be divisible by at least one other number j, where 1 < j < i.
+
+Why Stop at √i?
+Any non-prime number i can be written as a product of two factors:
+
+𝑖
+=
+𝑗
+×
+𝑘
+i=j×k
+where j and k are both greater than 1 and smaller than i.
+
+Now, think about how j and k behave:
+
+If both j and k were greater than √i, their product j × k would be greater than i, which is impossible.
+Therefore, at least one of these factors must be less than or equal to √i.
+This means:
+
+If i is divisible by some number, then at least one of its divisors must be ≤ √i.
+Example to Illustrate
+Let’s check if i = 37 is prime:
+
+√37 ≈ 6.08, so we only check divisibility for numbers up to 6.
+We check j = {2, 3, 4, 5, 6} and see if any of them divide 37 exactly.
+Since none of them divide 37, we conclude that 37 is prime.
+If i had a divisor greater than √i, it would have already been paired with a smaller divisor that we checked.
+
+Time Complexity Improvement
+Checking all numbers from 2 to i-1 takes O(i) time.
+Checking only up to √i takes O(√i) time, which is much faster for large numbers.
+For example:
+
+Checking up to 1,000,000 directly takes about 1,000,000 steps.
+Checking only up to √1,000,000 = 1,000 takes just 1,000 steps!
+Conclusion
+By checking divisibility only up to √i, we guarantee that any divisor will be found if i is not prime. If no divisors are found up to √i, the number is prime. This makes the algorithm both correct and efficient.
+
+====================================================================================================================================================
+
+include <iostream>
+
+int main() {
+    double x, y, input;
+    std::cin >> input;
+
+    if (input < 0) {
+        std::cout << "Error: Square root of negative number is not defined in real numbers." << std::endl;
+        return 1;
+    }
+
+    int i = 1;
+    while (i * i <= input) {
+        i++;
+    }
+
+    x = i - 1;  // Closest integer square root approximation
+    y = i;      // Next integer
+
+    long double j = x;
+    long double precision = 1e-7;  // Precision for accurate results
+
+    // Refining j using a step-based approach
+    long double step = 0.1;
+    while (step > precision) {
+        while (j * j <= input) {
+            j += step;
+        }
+        j -= step;  // Step back to last valid value
+        step /= 10; // Reduce step size for more precision
+    }
+
+    std::cout << "Square root: " << j << std::endl;
+    return 0;
+}
+
+====================================================================================================================================================
+
+1e-7 is scientific notation for the number 0.0000001 (1 × 10⁻⁷).
+
+What Does It Mean in the Code?
+In the context of the square root calculation, precision = 1e-7 ensures that the result is accurate up to 7 decimal places.
+
+Why Use 1e-7 Instead of 0.0000001?
+Readability: 1e-7 is easier to read and write.
+Efficiency: It avoids unnecessary floating-point rounding errors in some cases.
+Standard Notation: Scientific notation is commonly used in programming and mathematics for very small or large numbers.
+Example Usage
+double precision = 1e-7;
+std::cout << precision << std::endl;  // Output: 0.0000001
+It’s simply a shorthand for writing small decimal values in a concise and precise way.
+
+=====================================================================================================================================================
+
+We reduce the step size and step back to the last valid value to prevent overshooting the correct square root.
+
+Why Do We Step Back? (j -= z)
+In each iteration, we increment j in steps of z to get closer to the square root. However, at some point, j * j will exceed input.
+
+If we don’t step back, j would be slightly larger than the actual square root.
+By stepping back (j -= z), we return to the last valid value where j * j was still ≤ input.
+This ensures we refine the square root from the correct position.
+Why Do We Reduce the Step Size? (z /= 10)
+Initially, we use bigger steps (0.1, 0.01, 0.001...) to get close quickly.
+But if we continue using large steps, we won’t achieve high precision.
+By reducing z, we refine j more accurately, getting decimal places one by one.
+Example Walkthrough (Finding sqrt(50))
+First, find the integer approximation:
+
+7 * 7 = 49 (valid)
+8 * 8 = 64 (too high)
+So, start refining from j = 7.
+Refine using step size z = 0.1
+
+7.0 * 7.0 = 49
+7.1 * 7.1 = 50.41  (too high!)
+Step back: j = 7.0
+Reduce step: z = 0.01
+Refine using z = 0.01
+
+7.00 * 7.00 = 49
+7.01 * 7.01 = 49.1401
+7.07 * 7.07 = 49.9849
+7.08 * 7.08 = 50.1264
+Step back: j = 7.07
+Reduce step: z = 0.001
+Continue until desired precision (e.g., 1e-7)
+
+Final output: sqrt(50) ≈ 7.0710678
+
+Summary
+Step	j (Guess)	j * j (Square)	Action
+7.0	49.00	 Continue
+7.1	50.41	 Step back
+7.07	49.98	 Continue
+7.08	50.12	 Step back
+...	...	...
+This method gradually refines the answer without overshooting or infinite loops.
+
+Q: Means increment in z is 0.1 0.2 0.3 write?
+-----------------------------------------------
+The increment in z is not cumulative (like 0.1, 0.2, 0.3), but instead, it remains fixed at 0.1 initially and reduces after each refinement.
+
+How z Works?
+Initially, z = 0.1, so j is incremented by 0.1 in each step (j += z).
+Once we find an overshoot (j * j > input), we step back (j -= z).
+Then, we reduce z (z /= 10 -> now z = 0.01).
+We repeat the process with smaller increments (0.01, 0.001, etc.).
+Example Walkthrough (sqrt(50))
+Step 1: Start with z = 0.1
+j	j * j	Action
+7.0	49.00	 Continue
+7.1	50.41	 Step back
+Final j = 7.0		Reduce z = 0.01
+Step 2: Now z = 0.01
+j	j * j	Action
+7.01	49.1401	 Continue
+7.02	49.2804	 Continue
+7.07	49.9849	 Continue
+7.08	50.1264	 Step back
+Final j = 7.07		Reduce z = 0.001
+Step 3: Now z = 0.001
+j	j * j	Action
+7.071	49.998041	 Continue
+7.072	50.012184	 Step back
+Final j = 7.071		Reduce z = 0.0001
+Final Value
+This process continues until we reach high precision (e.g., 1e-7).
+The final j value will be 7.0710678, which is √50 with high precision.
+Key Takeaways
+z does not increment cumulatively (0.1, 0.2, 0.3 is incorrect).
+z remains constant in each refinement step until an overshoot occurs.
+z reduces (z /= 10) after each refinement to improve precision.
+We always step back (j -= z) if we overshoot to ensure accuracy.
+
+=====================================================================================================================================================
+
+include <iostream>
+using namespace std;
+
+int main() {
+    long double input;
+    cin >> input;
+
+    if (input < 0) {
+        cout << "Error: Square root of a negative number is not defined in real numbers." << endl;
+        return 1;
+    }
+
+    int i = 1;
+    while (i * i <= input) {
+        i++;
+    }
+
+    long double x = i - 1; // Closest integer approximation of sqrt(input)
+    long double j = x;
+    long double z = 0.1;   // Initial step size
+
+    // Perform a fixed number of refinements (e.g., 6 times for up to 6 decimal places)
+    for (int steps = 0; steps < 7; steps++) {
+        while (j * j <= input) {
+            j += z;
+        }
+        j -= z;  // Step back to the last valid value
+        z /= 10; // Reduce step size
+    }
+
+    cout << "Square root: " << j << endl;
+    return 0;
+}
+
+=====================================================================================================================================================

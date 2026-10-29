@@ -1,0 +1,323 @@
+include <stdio.h>
+include <stdlib.h>
+include <unistd.h>
+include <string.h>
+include <fcntl.h>
+include <sys/types.h>
+include <sys/wait.h>
+
+define MSG_SIZE 256
+
+void log_message(const char *filename, const char *message) {
+    int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) {
+        perror("Error opening log file");
+        exit(1);
+    }
+    write(fd, message, strlen(message));
+    write(fd, "\n", 1);
+    close(fd);
+}
+
+int main() {
+    int pipeAB[2], pipeBC[2], pipeCD[2], pipeDA[2];
+    pid_t pidA, pidB, pidC, pidD;
+    char message[MSG_SIZE];
+
+    pipe(pipeAB);
+    pipe(pipeBC);
+    pipe(pipeCD);
+    pipe(pipeDA);
+
+    if ((pidB = fork()) == 0) {
+        close(pipeAB[1]);  // Close unused write end
+        close(pipeBC[0]);  // Close unused read end
+
+        read(pipeAB[0], message, MSG_SIZE);
+        close(pipeAB[0]);
+
+        printf("Process B, enter modification: ");
+        fgets(message + strlen(message), MSG_SIZE - strlen(message), stdin);
+        strtok(message, "\n");  // Remove newline
+
+        log_message("log_B.txt", message);
+        write(pipeBC[1], message, strlen(message) + 1);
+        close(pipeBC[1]);
+
+        exit(0);
+    }
+
+    if ((pidC = fork()) == 0) {
+        close(pipeBC[1]);
+        close(pipeCD[0]);
+
+        read(pipeBC[0], message, MSG_SIZE);
+        close(pipeBC[0]);
+
+        printf("Process C, enter modification: ");
+        fgets(message + strlen(message), MSG_SIZE - strlen(message), stdin);
+        strtok(message, "\n");
+
+        log_message("log_C.txt", message);
+        write(pipeCD[1], message, strlen(message) + 1);
+        close(pipeCD[1]);
+
+        exit(0);
+    }
+
+    if ((pidD = fork()) == 0) {
+        close(pipeCD[1]);
+        close(pipeDA[0]);
+
+        read(pipeCD[0], message, MSG_SIZE);
+        close(pipeCD[0]);
+
+        printf("Process D, enter modification: ");
+        fgets(message + strlen(message), MSG_SIZE - strlen(message), stdin);
+        strtok(message, "\n");
+
+        log_message("log_D.txt", message);
+        write(pipeDA[1], message, strlen(message) + 1);
+        close(pipeDA[1]);
+
+        exit(0);
+    }
+
+    close(pipeAB[0]);
+    close(pipeDA[1]);
+
+    printf("Process A, enter initial message: ");
+    fgets(message, MSG_SIZE, stdin);
+    strtok(message, "\n");
+
+    log_message("log_A.txt", message);
+    write(pipeAB[1], message, strlen(message) + 1);
+    close(pipeAB[1]);
+
+    read(pipeDA[0], message, MSG_SIZE);
+    close(pipeDA[0]);
+
+    printf("\nFinal modified message received by Process A: %s\n", message);
+
+    wait(NULL);
+    wait(NULL);
+    wait(NULL);
+
+    return 0;
+}
+
+================================================
+================================================
+
+include <iostream>
+include <vector>
+include <algorithm>
+include <queue>
+
+using namespace std;
+
+struct Batsman {
+    string name;
+    int matchesPlayed;
+    float strikeRate;
+    float averageScore;
+};
+
+struct Bowler {
+    string name;
+    int matchesPlayed;
+    float economyRate;
+    int wicketsTaken;
+    float average;
+};
+
+// Function to sort batsmen using SJF (higher strike rate first)
+bool compareBatsmenSJF(Batsman a, Batsman b) {
+    return a.strikeRate > b.strikeRate;
+}
+
+// Function to sort bowlers using SJF (lower economy rate first)
+bool compareBowlersSJF(Bowler a, Bowler b) {
+    return a.economyRate < b.economyRate;
+}
+
+// Function to dynamically adjust batting order using SRTF (higher avg score first)
+bool compareBatsmenSRTF(Batsman a, Batsman b) {
+    return a.averageScore > b.averageScore;
+}
+
+// Function to dynamically adjust bowling order using SRTF (more wickets first)
+bool compareBowlersSRTF(Bowler a, Bowler b) {
+    return a.wicketsTaken > b.wicketsTaken;
+}
+
+// Round Robin for bowler rotation
+void roundRobinBowling(vector<Bowler> &bowlers, int totalOvers) {
+    queue<Bowler> bowlerQueue;
+    for (auto &bowler : bowlers) {
+        bowlerQueue.push(bowler);
+    }
+
+    cout << "\nBowling Order (Round Robin):\n";
+    for (int i = 0; i < totalOvers; i++) {
+        Bowler current = bowlerQueue.front();
+        bowlerQueue.pop();
+        cout << "Over " << i + 1 << ": " << current.name << endl;
+        bowlerQueue.push(current);
+    }
+}
+
+int main() {
+    int numBatsmen, numBowlers;
+    cout << "Enter the number of batsmen: ";
+    cin >> numBatsmen;
+    cout << "Enter the number of bowlers: ";
+    cin >> numBowlers;
+
+    vector<Batsman> batsmen(numBatsmen);
+    vector<Bowler> bowlers(numBowlers);
+
+    // Input batsmen data
+    for (int i = 0; i < numBatsmen; i++) {
+        cout << "Enter details for Batsman " << i + 1 << " (Name MatchesPlayed StrikeRate AvgScore): ";
+        cin >> batsmen[i].name >> batsmen[i].matchesPlayed >> batsmen[i].strikeRate >> batsmen[i].averageScore;
+    }
+
+    // Input bowlers data
+    for (int i = 0; i < numBowlers; i++) {
+        cout << "Enter details for Bowler " << i + 1 << " (Name MatchesPlayed EconomyRate WicketsTaken Avg): ";
+        cin >> bowlers[i].name >> bowlers[i].matchesPlayed >> bowlers[i].economyRate >> bowlers[i].wicketsTaken >> bowlers[i].average;
+    }
+
+    char choice;
+    cout << "\nAre you Batting (B) or Bowling (O)? ";
+    cin >> choice;
+
+    if (choice == 'B' || choice == 'b') {
+        cout << "Select Scheduling Algorithm:\n1. SJF\n2. SRTF\n";
+        int algoChoice;
+        cin >> algoChoice;
+
+        if (algoChoice == 1) {
+            sort(batsmen.begin(), batsmen.end(), compareBatsmenSJF);
+        } else if (algoChoice == 2) {
+            sort(batsmen.begin(), batsmen.end(), compareBatsmenSRTF);
+        }
+
+        cout << "\nOptimal Batting Order:\n";
+        float predictedScore = 0;
+        for (auto &batsman : batsmen) {
+            cout << batsman.name << " - Strike Rate: " << batsman.strikeRate << " - Avg Score: " << batsman.averageScore << endl;
+            predictedScore += batsman.averageScore;  // Sum of average scores
+        }
+        cout << "\nPredicted Team Score: " << predictedScore << " runs\n";
+
+    } else if (choice == 'O' || choice == 'o') {
+        cout << "Using Round Robin for Bowling.\n";
+        int totalOvers;
+        cout << "Enter total overs to be bowled: ";
+        cin >> totalOvers;
+
+        roundRobinBowling(bowlers, totalOvers);
+
+        // Predict wickets taken
+        float predictedWickets = 0;
+        for (auto &bowler : bowlers) {
+            predictedWickets += (float)bowler.wicketsTaken / bowler.matchesPlayed; // Average wickets per match
+        }
+
+        cout << "\nPredicted Total Wickets Taken: " << predictedWickets << endl;
+    }
+
+    return 0;
+}
+
+=================================================
+=================================================
+
+include <iostream>
+include <pthread.h>
+include <unistd.h>
+include <atomic>
+include <sched.h>
+
+using namespace std;
+
+atomic<int> currentStudent(0);
+atomic<bool> questionAsked(false);
+atomic<bool> answerGiven(false);
+int totalStudents;
+
+void QuestionStart(int studentID) {
+    while (questionAsked.load()) {
+        sched_yield(); // Wait for the professor to be available
+    }
+    currentStudent.store(studentID);
+    cout << "Student " << studentID << " asks a question.\n";
+    questionAsked.store(true);
+}
+
+void QuestionDone() {
+    cout << "Student " << currentStudent.load() << " has asked the question.\n";
+}
+
+void AnswerStart() {
+    while (!questionAsked.load()) {
+        cout << "Professor is sleeping...\n";
+        sleep(1);
+    }
+    cout << "Professor starts answering Student " << currentStudent.load() << "'s question.\n";
+    sleep(2);
+}
+
+void AnswerDone() {
+    cout << "Professor has answered Student " << currentStudent.load() << "'s question.\n";
+    answerGiven.store(true);
+    questionAsked.store(false);
+    answerGiven.store(false);
+}
+
+void* student(void* arg) {
+    int studentID = (int)arg;
+    QuestionStart(studentID);
+    QuestionDone();
+    while (!answerGiven.load()) {
+        sched_yield(); // Wait for professor to answer
+    }
+    cout << "Student " << studentID << " received the answer and leaves.\n";
+    return NULL;
+}
+
+void* professor(void* arg) {
+    while (true) {
+        AnswerStart();
+        AnswerDone();
+    }
+    return NULL;
+}
+
+int main() {
+    cout << "Enter the number of students: ";
+    cin >> totalStudents;
+
+    pthread_t prof_thread, student_threads[totalStudents];
+    int studentIDs[totalStudents];
+
+    pthread_create(&prof_thread, NULL, professor, NULL);
+    sleep(1);
+
+    for (int i = 0; i < totalStudents; i++) {
+        studentIDs[i] = i + 1;
+        pthread_create(&student_threads[i], NULL, student, &studentIDs[i]);
+        sleep(1);
+    }
+
+    for (int i = 0; i < totalStudents; i++) {
+        pthread_join(student_threads[i], NULL);
+    }
+
+    return 0;
+}
+
+=================================================
+=================================================

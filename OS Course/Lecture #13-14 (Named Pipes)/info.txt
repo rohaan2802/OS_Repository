@@ -1,0 +1,857 @@
+dup and dup2 in Linux System Programming
+Both dup and dup2 are system calls in Linux that duplicate file descriptors. They are used when you need to redirect file descriptors, such as standard input (stdin), standard output (stdout), or standard error (stderr).
+
+dup (Duplicate File Descriptor)
+The dup system call duplicates an existing file descriptor and returns a new file descriptor that refers to the same file.
+
+Syntax:
+include <unistd.h>
+
+int dup(int oldfd);
+How It Works:
+Takes an existing file descriptor (oldfd).
+Returns a new file descriptor (newfd) that refers to the same file.
+The new file descriptor will be the lowest available number.
+Both file descriptors share the same file offset and open file status.
+Example:
+include <stdio.h>
+include <unistd.h>
+include <fcntl.h>
+
+int main() {
+    int fd = open("example.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    int newfd = dup(fd);  // Duplicate fd
+
+    write(fd, "Hello, ", 7);
+    write(newfd, "World!\n", 7);  // Writes to the same file
+
+    close(fd);
+    close(newfd);
+
+    return 0;
+}
+Output in example.txt:
+
+Hello, World!
+Both file descriptors (fd and newfd) point to the same file and share the same offset!
+
+dup2 (Duplicate to Specific File Descriptor)
+The dup2 function is similar to dup, but it allows you to specify the new file descriptor number.
+
+Syntax:
+include <unistd.h>
+
+int dup2(int oldfd, int newfd);
+How It Works:
+If newfd is already open, it is closed first before being reassigned.
+The newfd will now be a duplicate of oldfd.
+If oldfd == newfd, dup2 does nothing and returns newfd.
+Example: Redirect stdout to a File
+include <stdio.h>
+include <unistd.h>
+include <fcntl.h>
+
+int main() {
+    int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    dup2(fd, STDOUT_FILENO);  // Redirect stdout to the file
+
+    printf("This will be written to output.txt!\n");
+
+    close(fd);
+    return 0;
+}
+Expected Output in output.txt:
+
+css
+This will be written to output.txt!
+Now, printf outputs to the file instead of the terminal!
+
+Key Differences Between dup and dup2
+Feature	dup	dup2
+Returns new FD?	Lowest available FD	Specific FD provided by user
+Closes newfd first?	 No	 Yes, if already open
+Can oldfd == newfd?	 No, always different	 Yes, does nothing
+When to Use dup and dup2?
+Use dup when you just need any available file descriptor.
+Use dup2 when you want to duplicate to a specific file descriptor (e.g., replacing stdout).
+
+Q: Still not understand?
+------------------------
+
+Understanding dup
+dup makes a copy of a file descriptor and returns a new file descriptor.
+Both the original and the new file descriptor point to the same file and share the same file position.
+
+Example: dup
+Imagine you have a notebook (file) and you make a photocopy (new file descriptor).
+Both have the same content and if you write on one, it affects the other.
+
+include <stdio.h>
+include <fcntl.h>
+include <unistd.h>
+
+int main() {
+    int fd = open("example.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    int newfd = dup(fd);  // Duplicate fd
+
+    write(fd, "Hello, ", 7);  // Write using original fd
+    write(newfd, "World!\n", 7);  // Write using duplicated fd
+
+    close(fd);
+    close(newfd);
+
+    return 0;
+}
+What happens?
+
+fd writes "Hello, "
+newfd writes "World!\n"
+The file output is:
+Hello, World!
+Both file descriptors share the same position, so the second write continues from where the first left off.
+
+Understanding dup2
+dup2(oldfd, newfd) does the same thing as dup, but lets you specify which file descriptor to overwrite.
+
+Example: Redirect stdout to a File
+Normally, when you use printf, it prints to the terminal.
+With dup2, we redirect stdout to a file, so printf writes to the file.
+
+include <stdio.h>
+include <fcntl.h>
+include <unistd.h>
+
+int main() {
+    int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    dup2(fd, STDOUT_FILENO);  // Redirect stdout (1) to fd
+
+    printf("This will be written to output.txt!\n");
+
+    close(fd);
+    return 0;
+}
+What happens?
+The file "output.txt" is opened.
+dup2(fd, STDOUT_FILENO) makes stdout (1) point to the file.
+Now, when printf("This will be written to output.txt!\n"); runs, it writes to the file instead of the terminal.
+Check output.txt and you'll see:
+
+css
+This will be written to output.txt!
+Key Differences
+Feature	dup()	dup2(oldfd, newfd)
+Returns new FD?	Yes, lowest available	Yes, but replaces newfd
+Can specify new FD?	No	Yes
+Closes newfd first?	No	Yes
+Common Use Case	Copying an FD	Redirecting output
+Simple Example with dup2
+Redirect stderr (2) to stdout (1), so both print to the same place:
+
+dup2(STDOUT_FILENO, STDERR_FILENO);
+fprintf(stderr, "This will print on stdout instead of stderr!\n");
+Summary:
+
+dup just copies a file descriptor.
+dup2 lets you replace an existing file descriptor.
+Did this explanation help?
+
+Q: In dup will the both descriptors are independent like if one descriptor close another will also close?
+----------------------------------------------------------------------
+Closing one descriptor does NOT close the other in dup.
+
+Both file descriptors refer to the same open file in the kernel, but they are independent file descriptors.
+
+Example to Test This
+include <stdio.h>
+include <fcntl.h>
+include <unistd.h>
+
+int main() {
+    int fd = open("example.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    int newfd = dup(fd);  // Duplicate fd
+
+    write(fd, "Hello, ", 7);
+
+    close(fd);  // Closing original fd
+
+    // newfd is still valid
+    write(newfd, "World!\n", 7);
+
+    close(newfd);  // Now we close newfd
+
+    return 0;
+}
+What happens?
+fd is opened for writing.
+newfd = dup(fd); creates a duplicate of fd.
+We write "Hello, " using fd.
+We close fd -> newfd is still valid!
+We write "World!\n" using newfd.
+Closing newfd finally releases the file.
+File Content (example.txt)
+Hello, World!
+Key Takeaway
+Closing one descriptor does NOT close the other.
+Both file descriptors share the same file position.
+The file only fully closes when all descriptors are closed.
+
+Q: But in dup2 what actually happens?
+-----------------------------------------
+In dup2(oldfd, newfd), the behavior is slightly different from dup.
+
+How dup2 Works
+If newfd is already open, it is first closed.
+Then, newfd is made to refer to the same open file as oldfd.
+After calling dup2, both oldfd and newfd refer to the same file description (same file position, flags, etc.).
+Unlike dup, you choose the file descriptor number for the duplicate.
+Example: dup2 vs dup
+include <stdio.h>
+include <fcntl.h>
+include <unistd.h>
+
+int main() {
+    int fd1 = open("example.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd1 < 0) {
+        perror("open");
+        return 1;
+    }
+
+    int fd2 = open("another.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    // Duplicate fd1 onto fd2
+    dup2(fd1, fd2);
+
+    write(fd2, "Hello, dup2!\n", 13);
+
+    close(fd1);
+    close(fd2);
+
+    return 0;
+}
+What Happens Here?
+fd1 opens example.txt.
+fd2 opens another.txt.
+dup2(fd1, fd2);
+Closes fd2 first.
+Makes fd2 refer to fd1's file (example.txt).
+Writing to fd2 actually writes to example.txt, NOT another.txt.
+Key Differences: dup vs dup2
+Feature	dup(oldfd)	dup2(oldfd, newfd)
+Descriptor Selection	Returns the lowest available FD	You choose newfd
+Closes newfd first	 No	 Yes
+Independent Descriptors	 Yes	 Yes
+Shares File Offset	 Yes	 Yes
+Does Closing One FD Close the Other in dup2?
+Just like dup, closing one descriptor does NOT close the other.
+Both FDs refer to the same file description in the kernel.
+
+Q: But when we use std_out...etc commands then whats that?
+----------------------------------------------------------
+When you use dup2 with STDOUT_FILENO, STDIN_FILENO, or STDERR_FILENO, you are redirecting standard input, output, or error to a different file or descriptor.
+
+Example 1: Redirect stdout to a File
+include <stdio.h>
+include <fcntl.h>
+include <unistd.h>
+
+int main() {
+    int fd = open("output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open");
+        return 1;
+    }
+
+    // Redirect stdout to fd (output.txt)
+    dup2(fd, STDOUT_FILENO);
+
+    // Now, anything printed to stdout goes to output.txt
+    printf("This will be written to the file!\n");
+
+    close(fd);
+    return 0;
+}
+How It Works
+fd opens output.txt.
+dup2(fd, STDOUT_FILENO) makes STDOUT_FILENO (normally the terminal) refer to fd.
+Now, printf writes to output.txt instead of the terminal.
+Closing fd does not close STDOUT_FILENO, but both refer to the same file.
+Example 2: Redirect stderr to stdout
+include <stdio.h>
+include <unistd.h>
+
+int main() {
+    // Redirect stderr to stdout
+    dup2(STDOUT_FILENO, STDERR_FILENO);
+
+    fprintf(stderr, "This is an error message!\n");
+    // This will now be printed on stdout (instead of stderr)
+
+    return 0;
+}
+What Happens Here?
+dup2(STDOUT_FILENO, STDERR_FILENO);
+Makes STDERR_FILENO refer to the same file as STDOUT_FILENO.
+Now, any error messages (fprintf(stderr,...)) go to stdout.
+How This Works in Shell
+In Linux, when you run:
+
+sh
+./a.out > myfile.txt
+By default, STDOUT_FILENO writes to the terminal.
+> myfile.txt redirects stdout to myfile.txt, similar to dup2(fd, STDOUT_FILENO).
+For both stdout and stderr:
+
+sh
+./a.out > output.txt 2>&1
+2>&1 means "redirect stderr (2) to where stdout (1) is going."
+Summary
+Command	Effect
+dup2(fd, STDOUT_FILENO)	Redirect stdout to fd (a file)
+dup2(fd, STDERR_FILENO)	Redirect stderr to fd
+dup2(STDOUT_FILENO, STDERR_FILENO)	Make stderr go where stdout goes
+
+Child Process (Independent Process)
+Real-Life Example: A Photocopy Machine
+Imagine you are making a photocopy of a document:
+Original Document (Parent Process) -> Photocopy (Child Process)
+
+The parent process creates a child process, just like making a photocopy.
+The copy looks exactly the same, but you can write or edit on it separately without changing the original.
+Both documents exist independently after copying.
+Example in Computing
+
+Opening Google Chrome starts a process.
+When you open a new tab, it creates a child process.
+If one tab crashes, others keep working because they are separate processes!
+Threads (Lightweight, Shared Memory)
+Real-Life Example: A Restaurant with Waiters
+Imagine a restaurant where:
+Chef (Main Process) prepares food.
+Waiters (Threads) serve food to different tables.
+
+The waiters share the same kitchen (memory) but work on different tasks.
+If one waiter is slow, others can still work without stopping the whole restaurant.
+They are faster than hiring new chefs (creating a child process) because they share resources.
+Example in Computing
+
+A text editor (Notepad, VS Code) can:
+Take input (keyboard typing)
+Auto-save
+Check spelling
+All happening simultaneously using threads!
+Multithreading (Multiple Threads in One Process)
+Real-Life Example: Netflix Streaming
+Imagine watching a movie on Netflix:
+Main Process: The movie player
+Threads:
+
+Video Decoding (Processing frames)
+Audio Decoding (Processing sound)
+Buffering (Loading the next scene)
+User Interaction (Pause/Play buttons)
+All these happen together in one process so your movie plays smoothly.
+
+Example in Computing
+
+Web browsers (Chrome, Firefox, Edge)
+Each tab is a separate process (so one tab crash won’t affect others).
+Inside a tab, multiple threads handle things like page loading, rendering, and JavaScript execution.
+Summary Table
+Feature	Child Process 	Threads 	Multithreading
+Definition	A separate copy of a program	A task running inside a process	Multiple threads in one process
+Memory	Separate for each child	Shared between threads	Shared within process
+Speed	Slow (needs new memory)	Fast (no new memory)	Very Fast
+Real-Life Example	Photocopying a document	Waiters in a restaurant	Netflix playing video/audio/buffering together
+Use Case	Opening a new browser tab	Auto-saving while typing	Playing a video smoothly
+
+When you create a child process, it is an exact copy of the parent process. However, there are some important details to understand:
+
+What Happens When a Child Process is Created?
+1 Same Code & Variables – The child process starts with the same code and memory as the parent.
+2 Independent Execution – The child process runs separately. If the parent changes a variable after forking, the child won't see the change.
+3 Different Process ID (PID) – The child process has a different PID than the parent.
+
+Example (C Code Using fork())
+include <stdio.h>
+include <unistd.h>  // for fork()
+
+int main() {
+    int x = 10; // Variable in both parent and child
+
+    int pid = fork(); // Create a child process
+
+    if (pid == 0) {  // This runs only in the child process
+        printf(" Child Process: x = %d\n", x);
+        x = 20;  // Changing x in child process
+        printf(" Child Process: x changed to %d\n", x);
+    } else {  // This runs only in the parent process
+        printf(" Parent Process: x = %d\n", x);
+        sleep(1);  // Sleep to ensure child runs first
+        printf(" Parent Process: x still = %d\n", x);
+    }
+
+    return 0;
+}
+Output Example
+arduino
+Parent Process: x = 10
+Child Process: x = 10
+Child Process: x changed to 20
+Parent Process: x still = 10
+Key Observations
+The parent and child have separate memory.
+The child gets a copy of x, but when it changes x = 20, it does not affect the parent's value.
+The parent’s x is still 10 because they have separate memory spaces.
+Summary
+Child process = Independent copy of parent
+Both processes run separately
+Memory is not shared (except for special cases like shared memory IPC)
+Changes in child do not affect the parent
+
+Difference Between Child Process, Thread, and Multithreading
+Feature	Child Process 	Thread 	Multithreading
+Definition	A separate instance of a program created by a parent process.	A lightweight unit within a process that shares memory and resources.	Running multiple threads in a single process to improve efficiency.
+Memory	Each child process has its own memory space (isolated from parent).	All threads share the same memory space of the parent process.	Multiple threads within a process share memory but have separate execution flows.
+Execution	Runs independently from the parent process.	Runs within the parent process, sharing CPU and memory.	Multiple threads execute concurrently within the same process.
+Communication	Needs Inter-Process Communication (IPC) (e.g., pipes, shared memory).	Shares data with other threads using global variables or synchronization mechanisms.	Uses synchronization tools like mutexes, semaphores, and locks to avoid race conditions.
+Performance	Slower due to the overhead of creating new processes.	Faster since threads share resources.	Improves performance by utilizing CPU cores efficiently.
+Overhead	High overhead (needs extra system resources).	Low overhead as threads are lightweight.	Minimal overhead compared to creating multiple processes.
+Crash Impact	A crash in a child process does not affect the parent.	A crash in one thread can crash the whole process.	A bug in one thread may lead to race conditions or deadlocks.
+Use Case	Running separate programs or isolating tasks (e.g., a web server spawning child processes).	Small tasks that require shared memory (e.g., handling multiple user requests in a server).	Used for parallel computing, handling multiple tasks efficiently (e.g., web browsers, gaming).
+
+Real-Life Examples of Threading & Multithreading
+
+1 Single Thread (Threading) Example
+Example: Cooking a Meal Alone
+Imagine you're cooking a meal alone in the kitchen.
+
+You chop vegetables
+Then you boil water
+Then you cook rice
+Each task is done one after another, meaning only one thread is running at a time.
+
+Characteristics:
+
+One task at a time
+Slower, but simpler
+2 Multithreading Example
+Example: Cooking with Multiple People
+Now, imagine you have two helpers in the kitchen:
+
+One person chops vegetables
+Another person boils water
+You cook rice  at the same time
+Since multiple tasks are happening at once, the meal is ready faster.
+
+Characteristics:
+
+Multiple tasks run simultaneously
+Faster execution, but requires coordination
+3 Programming Examples
+Single Thread Example (Threading)
+A simple text editor like Notepad runs in a single thread.
+
+If you type, the CPU only processes that action, one step at a time.
+Multithreading Example
+A web browser like Google Chrome uses multiple threads:
+
+One thread loads the webpage
+Another thread downloads images
+Another thread plays music/video
+This makes browsing fast and smooth!
+
+Key Difference Between Threading & Multithreading
+Feature	Threading (Single)	Multithreading
+Tasks	One at a time	Multiple at the same time
+Speed	Slower	Faster
+Efficiency	Less CPU utilization	Better CPU utilization
+Example	Notepad, Basic Calculator	Web Browser, Video Editor
+
+Q: More examples of computing?
+------------------------------
+More Examples of Threading & Multithreading in Computing
+Exploring different computing scenarios where single-threading and multithreading are used.
+
+Single Threading Examples (One Task at a Time)
+1 Command-Line Programs
+
+A simple "Hello World" program in C runs sequentially.
+No parallel execution—just one task at a time.
+2 Basic File Download
+
+If a browser downloads a single file, it does so one after another.
+Until the first file is finished, the next one won't start.
+3 Basic Image Processing
+
+If a program processes one image at a time, it is single-threaded.
+Example: Converting a JPG to PNG file.
+4 Simple Mobile Apps
+
+A basic calculator app runs on a single thread.
+Each calculation happens one after another.
+Multithreading Examples (Multiple Tasks at the Same Time)
+1 Web Browsers (Chrome, Firefox, Edge, etc.)
+
+Each tab runs in a separate thread.
+One thread for rendering a webpage, another for downloading images, another for handling user input.
+2 Video Games (GTA V, Call of Duty, etc.)
+
+One thread for graphics rendering
+Another thread for user input
+Another thread for AI behavior
+3 File Download Managers
+
+Downloads multiple files at once using different threads.
+Example: Internet Download Manager (IDM)
+4 Database Servers (MySQL, PostgreSQL, etc.)
+
+Each client request runs on a separate thread.
+Allows multiple users to read/write data at the same time.
+5 Operating Systems (Windows, Linux, macOS)
+
+Each running application is a separate process.
+Inside applications, tasks like file management, printing, and networking are multithreaded.
+6 Video Editing Software (Adobe Premiere, DaVinci Resolve)
+
+One thread for applying effects
+One thread for rendering frames
+One thread for exporting the final video
+7 Multithreaded Web Servers (Apache, Nginx, etc.)
+
+Handles thousands of users simultaneously.
+Each request is processed in a new thread.
+Summary: When to Use Single Threading vs Multithreading?
+Feature	Single Threading	Multithreading
+Best For	Simple tasks, minimal processing	Complex tasks, heavy workloads
+Example	Notepad, Simple CLI Apps	Web Browsers, Video Games, Servers
+Speed	Slower	Faster
+CPU Usage	Low	High
+Implementation	Easy	More complex
+Final Thoughts
+Multithreading is super powerful but requires careful management to avoid issues like race conditions and deadlocks.
+Single threading is simpler, but for demanding tasks, multithreading is the way to go!
+
+========================================================================================================
+
+Dif b/w named and unnamed pipes
+
+The difference between named and unnamed pipes lies in how they are used for interprocess communication (IPC):
+
+1. Named Pipe (FIFO - First In First Out)
+Exists as a file in the filesystem.
+Can be used for communication between unrelated processes.
+Created using the mkfifo command in Linux or CreateNamedPipe in Windows.
+Persistent—remains in the system until manually deleted.
+Can be accessed by multiple processes.
+Example:
+
+mkfifo mypipe  # Create a named pipe
+echo "Hello" > mypipe  # Write to the pipe
+cat < mypipe  # Read from the pipe
+
+2. Unnamed Pipe (Anonymous Pipe)
+Exists only in memory and cannot be accessed by unrelated processes.
+Typically used for communication between a parent and child process.
+Created using the pipe() system call in Linux.
+Temporary—disappears once the processes terminate.
+Unidirectional by default (data flows in one direction).
+
+Example in C (parent-child communication):
+
+int fd[2];
+pipe(fd);
+if (fork() == 0) {
+    close(fd[0]);  // Close unused read end
+    write(fd[1], "Hello", 6);
+    close(fd[1]);
+} else {
+    close(fd[1]);  // Close unused write end
+    char buffer[10];
+    read(fd[0], buffer, sizeof(buffer));
+    printf("Received: %s\n", buffer);
+    close(fd[0]);
+}
+
+Key Differences
+Feature		Named Pipe (FIFO)			Unnamed Pipe
+Existence		Persistent (exists in the filesystem)	Temporary (exists in memory)
+Scope		Can be used by unrelated processes	Only used by related processes (e.g., parent-child)
+Creation		Created using mkfifo			Created using pipe()
+Bidirectionality	Can be bidirectional			Usually unidirectional
+Accessibility	Identified by a name (file)		No name, exists only in memory
+
+For IPC between related processes, unnamed pipes are efficient. For unrelated processes, named pipes are the better choice.
+
+Means we use 2 way communication in ned pipes and one way in unnamed pipes
+
+That's mostly correct!
+
+Unnamed Pipes (One-Way Communication by Default)
+Unnamed pipes are typically unidirectional—one process writes, and the other reads.
+If two-way communication is needed, you must create two unnamed pipes (one for each direction).
+Named Pipes (Can Be Two-Way)
+Named pipes (FIFOs) can support bidirectional communication.
+However, in some systems, they may still act as half-duplex (one direction at a time).
+If true full-duplex (simultaneous reading and writing) is needed, two named pipes might be required.
+
+But in both if we can do 2 way communication and if we want synchronously then
+
+Both named and unnamed pipes can support two-way communication, but achieving synchronous communication requires additional mechanisms like synchronization techniques (blocking, non-blocking I/O, or signals).
+
+Synchronous Communication in Pipes
+For unnamed pipes: You need two pipes (one for each direction). Since pipes are blocking by default, a process will wait if there's no data to read.
+For named pipes: A single named pipe can be used in both directions, but in some cases, two named pipes are used for full-duplex communication.
+How to Achieve Synchronization?
+Blocking Read/Write (Default behavior of pipes)
+The reader process will wait until data is available.
+The writer process will wait if the pipe buffer is full.
+Non-blocking I/O (Using fcntl in Linux)
+Can be used to avoid blocking behavior.
+Using Select/Poll
+Useful when handling multiple pipes in a single process.
+Mutexes or Semaphores (for multi-threaded programs)
+Ensures only one thread accesses the pipe at a time.
+Example: Two-Way Communication Using Unnamed Pipes (Parent-Child, Synchronous)
+
+include <stdio.h>
+include <unistd.h>
+include <string.h>
+
+int main() {
+    int pipe1[2], pipe2[2]; // Two pipes for bidirectional communication
+    char buffer[100];
+
+    pipe(pipe1); // Parent writes, child reads
+    pipe(pipe2); // Child writes, parent reads
+
+    if (fork() == 0) { // Child process
+        close(pipe1[1]); // Close unused write end of pipe1
+        close(pipe2[0]); // Close unused read end of pipe2
+
+        read(pipe1[0], buffer, sizeof(buffer)); // Read from parent
+        printf("Child received: %s\n", buffer);
+
+        write(pipe2[1], "Hello, Parent!", 15); // Send response
+        close(pipe1[0]);
+        close(pipe2[1]);
+    } else { // Parent process
+        close(pipe1[0]); // Close unused read end of pipe1
+        close(pipe2[1]); // Close unused write end of pipe2
+
+        write(pipe1[1], "Hello, Child!", 14); // Send message
+        read(pipe2[0], buffer, sizeof(buffer)); // Read response from child
+        printf("Parent received: %s\n", buffer);
+
+        close(pipe1[1]);
+        close(pipe2[0]);
+    }
+
+    return 0;
+}
+
+Example: Two-Way Communication Using Named Pipes (Synchronous)
+
+Create two named pipes
+mkfifo pipe1 pipe2
+
+Terminal 1 (Process 1)
+echo "Hello from Process 1" > pipe1
+cat < pipe2
+
+Terminal 2 (Process 2)
+cat < pipe1
+echo "Hello from Process 2" > pipe2
+
+Key Takeaways
+Unnamed pipes need two pipes for two-way communication.
+Named pipes can be bidirectional but may still require two FIFOs for full-duplex.
+Synchronization is handled automatically by blocking read/write, or manually using non-blocking I/O, select, poll, or semaphores.
+
+Q: But how it is different if both works same?
+----------------------------------------------
+Even though both named and unnamed pipes can support two-way communication, they are different in several key ways:
+
+1. Scope of Communication
+Unnamed Pipes: Only work between related processes (parent-child).
+Named Pipes: Work between any two or more processes, even unrelated ones.
+2. Persistence
+Unnamed Pipes: Exist only as long as the processes using them are running. Once the process ends, the pipe disappears.
+Named Pipes: Exist as a file in the filesystem and remain even after processes terminate (until deleted manually).
+3. Identification
+Unnamed Pipes: Identified only by file descriptors, making them temporary and process-specific.
+Named Pipes: Have a filename in the filesystem, allowing any process to access them.
+4. Setup Complexity
+Unnamed Pipes: Need to be created at runtime using pipe(), requiring two pipes for bidirectional communication.
+Named Pipes: Created using mkfifo or mknod, allowing multiple processes to communicate more flexibly.
+
+5. Use Case Differences
+Feature			Unnamed Pipe			Named Pipe
+Communication	Only between parent-child processes		Between any two or more processes
+Persistence	Temporary (disappears when processes exit)	Persistent (exists in the filesystem)
+Identification	No name, uses file descriptors			Has a name in the filesystem
+Setup		Requires two pipes for bidirectional communication	Can use one pipe (though two are preferred for full-duplex)
+Example Usage	Parent-child communication in a single program	IPC between unrelated processes or even different programs
+So, while they both support two-way communication, their scope, persistence, and ease of use differ. If you're working with related processes, unnamed pipes are fine. But if you need IPC between independent processes, named pipes are the way to go.
+
+Q: Mode switching?
+------------------
+Mode Switching in Operating Systems
+Mode switching refers to the transition between different execution modes in a computer system, typically between user mode and kernel mode. This is essential for enforcing security, stability, and controlled access to system resources.
+
+1. Types of Mode Switching
+a) User Mode to Kernel Mode (Privilege Escalation)
+Occurs when a user process requests a system service, such as file I/O, memory allocation, or hardware access.
+This happens through system calls, interrupts, or exceptions.
+The CPU switches to kernel mode, executes the requested operation, and then switches back to user mode.
+Example:
+When a program calls printf(), it internally uses the write system call, causing a switch to kernel mode.
+
+b) Kernel Mode to User Mode (Privilege Reduction)
+Happens when the OS completes a privileged operation and returns control to the user process.
+The CPU switches back to user mode to ensure the process cannot access critical system resources directly.
+This transition is controlled using the IRET (Interrupt Return) instruction or syscall return mechanisms.
+Example:
+After completing a read() system call, the kernel passes control back to the user application.
+
+c) Process Context Switching (Between User Processes)
+The CPU switches execution between different user processes.
+This happens due to time-sharing (preemptive multitasking) or when a process is waiting for I/O.
+The OS saves the current process’s state (registers, program counter, etc.) and restores another process’s state.
+Example:
+A running process is paused so the CPU can execute another process in a multitasking system.
+
+d) Interrupt Handling (Asynchronous Mode Switch)
+When a hardware device (keyboard, disk, network) sends an interrupt, the CPU switches to kernel mode to execute an interrupt handler.
+Once the interrupt is handled, the CPU resumes execution in user mode or continues a different task.
+Example:
+A keypress on the keyboard triggers an interrupt, switching the CPU to kernel mode to process the input.
+
+2. Why Mode Switching is Necessary?
+Security: Prevents user programs from directly accessing hardware or sensitive system resources.
+Stability: Ensures that a faulty or malicious program cannot crash the entire system.
+Resource Management: The OS controls CPU time, memory access, and I/O operations.
+Concurrency: Allows multiple processes to run efficiently by switching between them.
+3. How Mode Switching Happens?
+The CPU maintains a mode bit:
+
+0 -> Kernel Mode (Full access)
+1 -> User Mode (Restricted access)
+When switching occurs:
+
+User to Kernel Mode:
+Triggered by a system call, hardware interrupt, or exception.
+The CPU saves the current state (registers, stack pointer).
+Switches the mode bit to 0 (kernel mode).
+Executes the OS routine.
+Kernel to User Mode:
+The OS completes its task.
+Restores the user process's state.
+Switches the mode bit to 1 (user mode).
+Resumes execution of the user process.
+4. Mode Switching vs. Context Switching
+Feature	Mode Switching	Context Switching
+What is it?	Switching between user mode and kernel mode	Switching between processes
+Triggered by?	System calls, interrupts, exceptions	Process scheduler (preemptive multitasking)
+Overhead	Low (only changes CPU mode)	Higher (saves/restores process states)
+Example	read(), write() system calls	Running process A, then switching to process B
+5. Real-World Example
+User Mode: Running a web browser, media player, or game.
+Kernel Mode: Handling network packets, disk read/write operations, or memory management.
+Switching Example:
+A browser requests a file from disk (fopen() -> system call).
+CPU switches to kernel mode to read the file.
+Once read, the CPU switches back to user mode, returning data to the browser.
+
+Q: Example of related and unrelated proces?
+-------------------------------------------
+Examples of Related and Unrelated Processes
+1. Related Processes
+Definition:
+Processes that share a common ancestry (e.g., parent-child relationship) and can communicate using unnamed pipes, shared memory, or signals.
+
+Example: Parent-Child Process (Related)
+A parent process creates a child process using fork().
+The child process executes a different task but remains related to the parent.
+C Program Example (Using Unnamed Pipe for IPC)
+
+include <stdio.h>
+include <unistd.h>
+include <string.h>
+
+int main() {
+    int fd[2];  // File descriptors for the pipe
+    char buffer[50];
+
+    pipe(fd); // Create an unnamed pipe
+
+    if (fork() == 0) { // Child process
+        close(fd[1]); // Close unused write end
+        read(fd[0], buffer, sizeof(buffer)); // Read data from parent
+        printf("Child received: %s\n", buffer);
+        close(fd[0]);
+    } else { // Parent process
+        close(fd[0]); // Close unused read end
+        write(fd[1], "Hello, Child!", 14); // Send message to child
+        close(fd[1]);
+    }
+
+    return 0;
+}
+Output:
+
+yaml
+Child received: Hello, Child!
+The parent and child are related because they share a common process hierarchy.
+2. Unrelated Processes
+Definition:
+Processes that do not share a common ancestry and run independently. They need named pipes (FIFOs), message queues, sockets, or shared memory to communicate.
+
+Example: Two Unrelated Processes Communicating via Named Pipe (FIFO)
+Process A writes data to a named pipe.
+Process B reads the data from the named pipe.
+Step 1: Create a Named Pipe
+
+mkfifo mypipe
+Step 2: Process A (Writer) - Writes Data to Pipe
+
+echo "Hello from Process A" > mypipe
+Step 3: Process B (Reader) - Reads Data from Pipe
+
+cat < mypipe
+Output:
+
+css
+Hello from Process A
+Process A and Process B are unrelated because they were started independently but communicate through the named pipe.
+Key Differences Between Related and Unrelated Processes
+Feature	Related Processes	Unrelated Processes
+Definition	Have a parent-child relationship	No parent-child relationship
+Example	A parent process creating a child using fork()	Two separate applications communicating
+Communication	Can use unnamed pipes, signals, shared memory	Need named pipes (FIFO), message queues, sockets
+Persistence	Child depends on parent	Independent execution
+Example in Linux	bash executing a child script	firefox communicating with spotify

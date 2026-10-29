@@ -1,0 +1,130 @@
+Mutex (Mutual Exclusion) and Semaphore are synchronization primitives used in concurrent programming to manage access to shared resources.
+
+Mutex (Mutual Exclusion Object)
+Purpose: To allow only one thread to access a critical section at a time.
+
+Ownership: Only the thread that locks (acquires) the mutex can unlock (release) it.
+
+Binary: It's essentially a binary lock — only 0 or 1 (locked/unlocked).
+
+Blocking: If one thread holds the mutex, others are blocked until it is released.
+
+Usage: Best when only one thread should access a shared resource at a time.
+
+Example (Pseudocode):
+
+mutex.lock();
+// critical section
+mutex.unlock();
+Semaphore
+Purpose: Controls access to a resource pool with limited instances (not just one).
+
+Types:
+
+Binary Semaphore (like a mutex): Only 0 or 1.
+
+Counting Semaphore: Has a count > 1, allowing multiple threads to access the resource up to a limit.
+
+Ownership: Any thread can signal (release) a semaphore, not necessarily the one that waited.
+
+Usage: Best when multiple instances of a resource exist (like 3 printers).
+
+Example (Counting Semaphore, Pseudocode):
+
+Q: Sem.wait();   // acquire // critical section sem.signal(); // release Key Differences Feature	Mutex	Semaphore Count	Binary (0 or 1)	Can be >1 (counting) Ownership	Yes	No Use Case	Mutual exclusion	Resource management Unlocking	Only locker thread	Any thread Type	Locking mechanism	Signaling mechanism?
+----------------------------------------------------------------------
+
+Mutex (Mutual Exclusion)
+Think of a key to a bathroom.
+
+Only one person (thread) can use the bathroom (shared resource) at a time.
+
+If someone is inside, others must wait.
+
+The person who locks (enters) must unlock (leave) it.
+
+Used when only one thread should access something at a time.
+
+Semaphore
+Think of a parking lot with 3 spots.
+
+3 cars (threads) can park at the same time.
+
+If all spots are full, other cars have to wait.
+
+When a car leaves, another can enter.
+
+Used when more than one thread can access something, but there's a limit.
+
+Key Idea:
+Term	Real Life Example	How Many at a Time?
+Mutex	One bathroom with one key	1 person
+Semaphore	Parking lot with 3 spots	3 people (or more)
+
+Q: Shared resources?
+-----------------------
+Let’s break that down too.
+
+What are Shared Resources?
+Shared resources are things in a computer program that multiple parts (threads or processes) want to use at the same time.
+
+Examples of Shared Resources:
+Resource	Real Life Example	Explanation
+Printer	A shared printer in an office	Multiple people want to print at once
+File	A file on disk	Many programs trying to read/write
+Database	One database for many users	All users accessing the same data
+Variable/Memory	A jar of cookies 	Threads want to read or change the same value
+Why is this a problem?
+If two or more threads try to use or change a shared resource at the same time, it can cause problems like:
+
+Wrong data
+
+Crashes
+
+Confusing results
+
+How to fix it?
+Use Mutex or Semaphore to control access so that:
+
+Only one thread uses the resource at a time (mutex).
+
+Or only a certain number of threads can use it at the same time (semaphore).
+
+Q: Mutex vs semaphores as they both ensure that one thread can use shred resources at a time?
+----------------------------------------------------------------------
+but they work a little differently and are used for slightly different situations.
+
+Let’s break it down in very simple words with a real-life example:
+
+Mutex (Mutual Exclusion)
+Think of one bathroom with one key.
+
+Only one person can use it.
+
+If someone locks the door (takes the mutex), no one else can enter.
+
+Only the person who locked it can unlock it.
+
+Used when only ONE thread should access the resource.
+
+Semaphore
+Think of a parking lot with 3 spaces.
+
+3 cars (threads) can park at the same time.
+
+If it's full, other cars have to wait.
+
+Anyone can leave a spot and let others in.
+
+Used when MULTIPLE threads can access the resource at the same time, but there’s a limit.
+
+Now the big difference:
+Feature	Mutex	Semaphore
+Threads allowed	Only 1 at a time	More than 1 (depends on count)
+Ownership	Only the thread that locks it can unlock it	Any thread can signal (release) it
+Type	Lock	Counter (like a ticket system)
+Best for	Single access protection	Limited access (e.g., connection pool)
+Summary:
+Use mutex when only one thread should access something at a time.
+
+Use semaphore when you allow a limited number of threads to access it.

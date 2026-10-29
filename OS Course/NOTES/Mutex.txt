@@ -1,0 +1,55 @@
+What is a Mutex?
+A Mutex (Mutual Exclusion) is a synchronization mechanism used in multithreading and concurrent programming to ensure that only one thread at a time can access a shared resource (e.g., a variable, file, or database).
+
+Why Use a Mutex?
+When multiple threads try to access and modify the same resource at the same time, it can cause race conditions and data inconsistency. A Mutex helps prevent this by locking the resource so that only one thread can use it at a time.
+
+How Mutex Works?
+Lock: A thread locks the Mutex before accessing a shared resource.
+Critical Section: The thread performs operations on the shared resource.
+Unlock: The thread releases the Mutex so that other threads can use the resource.
+If another thread tries to lock the Mutex while it's already locked, it waits (blocks) until the Mutex is unlocked.
+
+Example in Python (Using threading.Lock)
+Python provides threading.Lock, which works as a Mutex.
+
+import threading
+
+Shared resource
+counter = 0
+
+Mutex (Lock) to control access to the shared resource
+mutex = threading.Lock()
+
+Function to increment counter
+def increment():
+    global counter
+    for _ in range(100000):
+        with mutex:  # Lock the resource
+            counter += 1  # Critical Section
+
+Create two threads
+thread1 = threading.Thread(target=increment)
+thread2 = threading.Thread(target=increment)
+
+Start the threads
+thread1.start()
+thread2.start()
+
+Wait for both threads to finish
+thread1.join()
+thread2.join()
+
+print("Final Counter Value:", counter)
+How This Helps?
+Without Mutex: The final counter value may be incorrect due to race conditions.
+With Mutex (with mutex:): The critical section is protected, so counter is updated correctly.
+Mutex vs. Semaphore
+Feature	Mutex	Semaphore
+Ownership	Owned by locking thread	No specific owner
+Value	Only 0 (locked) or 1 (unlocked)	Can have values >1 (allow multiple accesses)
+Use Case	Prevents multiple threads from accessing a resource	Limits concurrent access (e.g., 3 threads can access a resource at a time)
+Key Takeaways
+A Mutex ensures only one thread accesses a resource at a time.
+It prevents race conditions and data corruption.
+In Python, threading.Lock() is used as a Mutex.

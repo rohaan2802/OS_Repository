@@ -1,0 +1,48 @@
+1. strspn – Count Matching Characters from the Start
+strspn checks how many characters from the beginning of str1 are present in str2. As soon as it finds a character not in str2, it stops counting.
+
+Example:
+include <iostream>
+include <cstring>
+
+int main() {
+    const char str1[] = "123abc";
+    const char str2[] = "0123456789";  // Only numbers allowed
+
+    size_t len = strspn(str1, str2);
+    std::cout << "Matching numbers at the start: " << len << '\n';  // Output: 3
+}
+Explanation:
+str1 = "123abc"
+str2 = "0123456789" (only numbers)
+The first three characters in str1 ("123") are numbers, so the function returns 3.
+It stops when it reaches 'a', which is not a number.
+
+2. strcspn – Count Until a Matching Character is Found
+strcspn checks how many characters from the beginning of str1 do not appear in str2. As soon as it finds a character from str2, it stops counting.
+
+Example:
+include <iostream>
+include <cstring>
+
+int main() {
+    const char str1[] = "hello123";
+    const char str2[] = "0123456789";  // Digits
+
+    size_t len = strcspn(str1, str2);
+    std::cout << "Non-number characters at the start: " << len << '\n';  // Output: 5
+}
+Explanation:
+str1 = "hello123"
+str2 = "0123456789" (only numbers)
+The first five characters ("hello") are not numbers, so it counts them.
+It stops at '1', which is a number.
+Returns 5 because "hello" is five characters long.
+Key Difference Between strspn and strcspn
+Function	Counts Characters That…	Stops At…
+strspn	Match str2	First  non-matching character
+strcspn	Do NOT match str2	First matching character
+Final Thought:
+
+Use strspn when you want to count how long the matching sequence is at the beginning.
+Use strcspn when you want to count how long the non-matching sequence

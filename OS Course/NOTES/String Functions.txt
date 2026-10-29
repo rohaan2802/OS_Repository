@@ -1,0 +1,50 @@
+strncmp() — String Compare (Partial)
+strncmp() is a string comparison function in C that compares only the first n characters of two strings.
+
+Syntax:
+int strncmp(const char *str1, const char *str2, size_t n);
+str1: First string
+
+str2: Second string
+
+n: Maximum number of characters to compare
+
+What It Does:
+It compares up to n characters of str1 and str2:
+
+Returns 0 if the strings are equal (within the first n characters)
+
+Returns positive if str1 > str2
+
+Returns negative if str1 < str2
+
+Example:
+include <stdio.h>
+include <string.h>
+
+int main() {
+    char a[] = "apple";
+    char b[] = "apricot";
+
+    if (strncmp(a, b, 2) == 0) {
+        printf("First 2 characters match!\n");
+    } else {
+        printf("First 2 characters do not match.\n");
+    }
+
+    return 0;
+}
+Output:
+
+First 2 characters match!
+Because "ap" == "ap".
+
+Why Use strncmp Instead of strcmp?
+strcmp() compares entire strings.
+
+strncmp() is safer when you want to compare only a part of the strings (e.g., checking a prefix).
+
+Note:
+strncmp() stops at the first difference or after n characters, whichever comes first.
+
+It does not modify the strings.

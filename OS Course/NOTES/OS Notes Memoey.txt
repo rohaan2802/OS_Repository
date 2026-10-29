@@ -1,0 +1,1033 @@
+When a program is made to run, its instructions and data must be placed in the computer's memory (RAM). Address binding is the process of deciding where exactly in memory the program will go.
+
+There are 3 types of address binding:
+
+1. Compile Time Binding
+Happens when you compile the program (i.e., convert it from code to machine language).
+
+The program is fixed to a specific memory address.
+
+If you want to run it at a different location later, you have to recompile it.
+
+Example: MS-DOS.COM files — always load at the same address.
+
+Simple analogy: It’s like packing your things into a locker with a specific number. If that locker isn’t available, you need to repack everything for a new locker.
+
+2. Load Time Binding
+Happens when the program is loaded into memory.
+
+The program is not tied to one location in memory when compiled.
+
+It can be loaded into any free part of memory.
+
+Once it’s loaded, it stays there during execution.
+
+Analogy: It’s like going to a hotel and being assigned any available room at check-in. But once assigned, you stay in that room.
+
+3. Run Time Binding
+Happens while the program is running.
+
+The program can move around in memory during execution.
+
+Needs extra help from the operating system (like virtual memory).
+
+Analogy: It’s like a person who changes rooms in a hotel multiple times during their stay — while still continuing their activities.
+
+Summary Table:
+Type	When it happens	Can change location?	Example
+Compile Time	During compilation	 No (fixed)	MS-DOS.COM files
+Load Time	While loading	 Yes (once)	Relocatable programs
+Run Time	While running	 Yes (anytime)	Virtual memory apps
+
+===============================================
+
+What’s the Problem?
+When a program runs, it needs memory (RAM) to store and access data and instructions. But how do we manage this memory properly, especially when many programs are running at the same time?
+
+That’s where logical and physical addresses come in.
+
+Logical Address (aka Virtual Address)
+This is the address created by the CPU when the program runs.
+
+It's like the "imaginary" address your program uses.
+
+The program thinks it's using a clean, simple memory space.
+
+Think of it as: A person sending a letter to a "Room A" inside a big hotel — they don’t care where Room A actually is.
+
+Physical Address
+This is the actual location in the computer’s memory (RAM).
+
+It’s where the data or instruction really lives.
+
+Think of it as: The hotel manager knows that “Room A” really means Room 302 on the 3rd floor — the real place.
+
+When Are Logical and Physical Addresses the Same or Different?
+Address Binding Time	Are Logical and Physical Addresses the Same?	Example
+Compile Time	 Yes	Fixed-position program (like.COM files)
+Load Time	 Yes (after loading)	Program is placed once in memory
+Run Time	 No – They are different	Uses virtual memory; addresses are translated while running
+
+Address Spaces
+Logical Address Space: All the addresses a program thinks it’s using.
+
+(e.g., 0 to 1023 if the program uses 1024 bytes)
+
+Physical Address Space: All the real locations in RAM the program actually uses.
+
+Why is This Important?
+Because it allows:
+
+Multiple programs to run safely without interfering.
+
+Flexibility: Programs can run even if they’re not loaded at the same place each time.
+
+Security and isolation: One program can't peek into another’s memory.
+
+Simple Analogy
+Imagine every guest (program) thinks they live in “Room 1”, but the hotel (OS) secretly maps “Room 1” to different real rooms (physical memory), so no guest interferes with another.
+
+================================================
+
+Physical Address
+This is the real address in your computer’s RAM (memory hardware).
+
+It’s what the memory hardware understands.
+
+Example:
+A 32-bit CPU can handle addresses from
+0 to 2³² - 1
+or in hexadecimal: 00000000 to FFFFFFFF
+-> That’s 4 GB of addressable space.
+
+If you have 1 GB of RAM, then the addresses range from
+0 to 2³⁰ - 1
+or in hex: 00000000 to 3FFFFFFF (or 4FFFFFFF approx).
+
+Logical Address (Virtual Address)
+This is the address that a program thinks it's using.
+
+Every program starts from 0 in its mind.
+
+It assumes it has its own big memory space, even if real memory is smaller.
+
+Why?
+Because the operating system maps the program’s logical addresses to physical addresses.
+
+This lets multiple programs run at the same time without crashing into each other’s memory.
+
+Simple Analogy:
+Imagine you have a small hotel (physical memory) with only 100 rooms.
+
+Each guest (program) thinks they have a whole hotel starting from Room 0 — that's their logical view.
+
+The hotel manager (OS) maps each guest’s Room 0 to a different real room in the hotel so they don’t overlap.
+
+Summary:
+Term	What it means	Example (32-bit)
+Physical Address	Real hardware memory address	0 to FFFFFFFF (4 GB)
+Logical Address	What the program thinks its memory looks like	Starts from 0 to much larger
+Who maps it?	Operating System + MMU (Memory Management Unit)	Maps logical -> physical
+
+===============================================
+
+1.  Relocation
+What it means: Moving a program to different memory locations.
+
+A program should be able to run no matter where it’s loaded in memory.
+
+Example: You open Chrome and Word. Both need memory. The OS decides where to put them in RAM — and might put them in different places each time.
+
+2.  Protection
+What it means: One program should not access or damage another program’s memory.
+
+Example: If you're watching a movie and also working in Word, the movie player shouldn’t mess with your Word document’s memory.
+
+The OS protects each program’s memory so they don’t interfere.
+
+3.  Sharing
+What it means: Sometimes, two or more programs need to access the same data or code.
+
+Example: Multiple apps use the same font file or a shared library.
+
+Instead of copying it for every app, the OS lets them share it safely.
+
+4.  Physical Memory Organization
+What it means: How actual memory (RAM) is arranged and managed.
+
+Includes things like:
+
+Where the OS lives
+
+How to split memory for different apps
+
+Managing free and used memory
+
+Example: Just like arranging furniture in a room — the OS decides how to organize memory space so everything fits and works well.
+
+Summary:
+Feature	Simple Meaning	Why it's Needed
+Relocation	Programs can run anywhere in memory	Flexible loading
+Protection	Programs can’t harm each other’s memory	Safety & stability
+Sharing	Programs can use the same data or code	Save memory, better performance
+Physical Memory Organization	How RAM is arranged and managed	Efficient and reliable memory use
+
+===================================================================
+
+Relocation (Moving a Program in Memory)
+When a program is written, it thinks it's starting from address 0.
+
+But in reality, the OS might load it somewhere else in memory, like at address 100,000 (100k) or 200,000 (200k), depending on which memory partition is free.
+
+The Solution: Use an Offset
+To fix this, the OS uses an offset — a number that gets added to every address the program uses.
+
+Example:
+Program thinks it's reading from address 0
+
+If loaded in partition 1, the OS adds 100k
+
+So the real memory address is 0 + 100k = 100k
+
+This way, the program doesn’t need to know where it was loaded — the OS just adds the right offset behind the scenes.
+
+But What’s the Problem?
+Even with offsets, a program could try to access memory outside its area — maybe by mistake or due to a bug.
+
+For example: A program in partition 1 might try to jump to address 300k, where the OS or another program is running.
+
+Protection is Needed
+To protect memory, we don’t just add an offset — we also need a limit.
+
+So the OS makes sure the program can only access:
+
+From: Base address (like 100k)
+
+To: Base + Size (like 100k + 50k = 150k)
+
+If the program tries to go outside that range, the OS will block it or stop it.
+
+Summary
+Term	Simple Meaning
+Offset	Added to every address to move the program
+Base	Starting physical address (like 100k)
+Limit	Maximum allowed memory range
+Protection	Stops the program from touching other areas
+
+This is done using hardware (like base and limit registers) or by memory management units (MMUs) in modern systems.
+
+===============================================
+
+Problem
+We need to:
+
+Move programs to different memory locations (Relocation)
+
+Stop them from accessing other programs' memory (Protection)
+
+Solution: Use Two Special Registers
+The system uses two registers:
+
+Base Register
+
+Stores the starting address of the program in memory.
+
+Example: If the program starts at 100,000 (100k), base = 100k
+
+Limit Register
+
+Stores the size of the memory space allowed for the program.
+
+Example: If the program is allowed 50k space, limit = 50k
+
+How It Works
+When a program wants to access memory at address A (like 10),
+
+The system adds the base register to it:
+Real address = base + A = 100k + 10 = 100010
+
+The system checks:
+Is A less than the limit (50k)?
+
+If yes -> access is allowed
+
+If no -> it’s blocked for safety
+
+Why This is Great
+Relocation: Programs don’t care where they’re loaded. OS just changes the base register.
+
+Protection: Programs can only access memory within their allowed range. No memory leaks or crashes!
+
+Real-Life Analogy
+Imagine:
+
+You rent a shelf in a library.
+
+Base = the number of your shelf (start)
+
+Limit = how many books you can place
+
+You can only place or pick books within your shelf.
+You can’t reach someone else’s shelf — the librarian (OS) will stop you!
+
+Summary Table
+Term	Meaning
+Base Register	Start of the program’s memory area
+Limit Register	Maximum memory size allowed for the program
+Protection	Stops access outside the limit
+Relocation	Allows placing program anywhere in memory
+
+========================================================
+
+Run just one program at a time
+
+Memory is shared between
+
+A User program
+
+Operating system
+
+Operating
+System
+
+User
+Program
+
+The user types a command on the prompt
+
+The OS
+
+Copies the program from the disk to memory
+
+Executes the program
+
+After execution, prompt is available again
+
+Q: The new program is copied into RAM, overwriting the previous one?
+--------------------------------------------------------------------
+Breaking down uni-programming in easy words:
+
+What is Uni-programming?
+Uni-programming means:
+Only one program runs at a time on the computer.
+
+How It Works:
+The user types a command (like run game.exe).
+
+The Operating System (OS):
+
+Finds the program on the hard disk
+
+Copies it into RAM (memory)
+
+▶ Then, the program runs.
+
+When the program finishes:
+
+The OS gives control back to the user (shows the prompt again)
+
+If the user runs a new program, it will:
+
+Replace (overwrite) the old program in RAM
+
+Memory is Shared Between:
+The Operating System (always needed to manage things)
+
+The User Program (only one at a time)
+
+Think of memory as a desk:
+
+One corner is used by the OS
+
+The rest is for only one task at a time
+
+Real-Life Example:
+Imagine a small kitchen with one stove:
+
+You can only cook one dish at a time.
+
+When you're done cooking one, you clear the stove.
+
+Then, you can cook the next dish.
+
+Just like that, one program runs, finishes, and is replaced by the next.
+
+Summary:
+Feature	Meaning
+One Program	Only one user program runs at a time
+Memory Use	Shared between OS and the program
+Loading Programs	New program replaces old in RAM
+Execution	OS loads, runs, then waits for next
+
+==========================================================
+
+What is Multi-programming?
+Multi-programming means:
+The computer keeps more than one program (process) in memory at the same time.
+
+The CPU switches between them, so it looks like multiple programs are running together (even though only one runs at a time).
+
+Benefits of Multi-programming:
+Benefit	 Explanation
+Better CPU use	When one program is waiting (e.g., for input), the CPU works on another
+Faster response	Users don’t wait long; programs get a turn quickly
+Increased efficiency	Memory and CPU are used more effectively
+Multitasking feel	It feels like doing multiple things at once
+
+How Do We Organize Memory for This?
+To keep many programs in memory, we need to divide the memory into separate areas for each program.
+
+Basic Approach: Fixed Partitions
+Divide memory into n partitions.
+
+These are separate memory blocks.
+
+Each partition holds one program/process.
+
+When a program finishes, the OS can load a new one into that empty space.
+
+The partitions can be:
+
+Equal size (simple, but wastes space)
+
+Unequal size (more flexible, better memory use)
+
+Real-Life Example:
+Imagine a bookshelf with 4 sections (partitions).
+Each section holds one book (program).
+
+You can read from any section one by one
+
+If one book is missing a page (waiting), you switch to reading another
+
+Summary Table
+Concept	Meaning
+Multi-programming	Many programs in memory at once
+Goal	Use CPU and memory more efficiently
+Memory setup	Divide into partitions (equal/unequal)
+CPU switching	Runs one process at a time, switches fast
+
+==========================================================================
+
+What is Memory Management?
+Memory management is how the Operating System (OS) decides:
+
+Where to place programs in memory (RAM)
+
+How to protect them from each other
+
+How to reuse memory when programs finish
+
+Simple Case (No Advanced Tricks)
+In the beginning, we assume:
+
+Only one program is loaded completely into memory.
+
+The program is smaller than RAM.
+
+It runs from start to finish — simple and easy.
+
+But when we want to run multiple programs, we need better memory management techniques.
+
+Common Memory Management Techniques:
+We will look at three basic ones:
+
+Fixed Partitioning
+
+Dynamic Partitioning
+
+Paging
+
+Let’s start with the first one:
+
+1. Fixed Partitioning (Easy Method)
+What is It?
+Fixed Partitioning means:
+Divide RAM into fixed-sized blocks called partitions.
+
+These partitions do not overlap
+
+Each partition holds only one program
+
+Partition Sizes:
+Equal-sized partitions
+
+All partitions are the same size
+
+Easy to manage, but may waste space
+
+Unequal-sized partitions
+
+Different sizes for small and big programs
+
+Saves space, but harder to manage
+
+Imagine This:
+You have 64 MB of RAM.
+You divide it into 4 partitions:
+
+Option A: All are 16 MB each (Equal)
+
+Option B: 10 MB, 14 MB, 20 MB, 20 MB (Unequal)
+
+Each running program is loaded into one of these partitions.
+
+Real-Life Example:
+Think of a parking lot divided into slots:
+
+Each slot (partition) can hold one car (program)
+
+You can’t fit a bus in a small slot
+
+If a small bike uses a big slot -> wasted space
+
+Downsides of Fixed Partitioning:
+Problem	Why It Happens
+Internal Fragmentation	When a program is smaller than the partition, leftover space is wasted
+Limited number of programs	Only as many programs as partitions can run at once
+
+Summary:
+Term	Meaning
+Fixed Partitioning	Divide RAM into fixed non-overlapping blocks
+Equal Partitions	Same size blocks — simple but may waste space
+Unequal Partitions	Different sizes — more flexible
+Internal Fragmentation	Wasted space inside partition if program is smaller
+
+=========================================================================
+
+Multiprogramming with Fixed Partitions
+Basic Idea:
+Memory (RAM) is divided into fixed-size partitions.
+
+Multiple programs (jobs) can be kept in memory at the same time, each in its own partition.
+
+Problem: Wasted Memory
+If a program (job) is smaller than the partition it goes into -> unused space is wasted.
+
+Example:
+
+Partition size = 500 KB
+
+Job size = 300 KB
+
+-> 200 KB is wasted (called internal fragmentation)
+
+How Jobs Are Placed:
+When a job comes in:
+
+It goes into the input queue for a partition that’s big enough.
+
+Prefer the smallest partition that fits the job (to save space).
+
+Problem with Multiple Queues
+If you have separate queues for each partition:
+
+Example:
+
+Big partition is empty
+
+But small-job queues are full
+
+Small jobs have to wait, even though big partition is free
+This is inefficient and unfair
+
+Better Way:
+Use a single common queue for all jobs.
+
+How Jobs Are Chosen (with Single Queue)
+When a partition becomes free:
+
+Look at the front of the queue
+
+Pick the first job that fits in the partition
+
+Try to avoid wasting large partitions on small jobs:
+
+Search the queue for the largest job that fits the partition
+
+But: this can unfairly delay smaller jobs
+
+To keep it fair:
+
+A job should not be skipped more than k times
+
+Overlays in Memory Management
+What if a Program is Bigger than Memory?
+Sometimes, the program is too big to fit into one partition.
+
+Solution: Overlays
+
+What are Overlays?
+Instead of loading the entire program, only parts of it are loaded when needed.
+
+Think of it like this:
+
+You only need part of your brain to do one task.
+
+When you switch tasks, you "swap in" the required part.
+
+How Overlays Work:
+Only some parts of the program are loaded into memory.
+
+When another part is needed:
+
+The current part is unloaded
+
+The new part is loaded in and run
+
+Overlay Example:
+Main memory size = 150 KB
+
+Program size = 200 KB
+
+Too big to load completely!
+
+Let’s say:
+
+Pass 1 = 100 KB
+
+Pass 2 = 100 KB
+
+Symbol Table & Common Routines = 50 KB (used by both)
+
+We can:
+
+Load Pass 1 + Common parts -> run Pass 1
+
+Remove Pass 1
+
+Load Pass 2 + Common parts -> run Pass 2
+
+This way, we only load what’s needed at a time.
+
+Summary Table:
+Concept	Easy Explanation
+Fixed Partitioning	RAM divided into fixed blocks; one job per block
+Internal Fragmentation	Wasted space when job < partition size
+Multiple Queues	One queue per partition — can cause waiting
+Single Queue	One common queue — fairer and more efficient
+Overlays	Load only parts of a large program as needed
+
+=============================================================
+
+Symbol Table
+What is it?
+A symbol table is like a dictionary or reference list used by a program during compilation or execution.
+
+What does it store?
+It keeps track of:
+
+Variable names and their memory locations
+
+Function names and where they are in the code
+
+Labels, constants, etc.
+
+Why is it needed?
+So that the program can know:
+
+Where each variable or function is located
+
+What each symbol represents
+
+Example:
+If your code has:
+
+int x = 5;
+The symbol table might store:
+
+x -> memory address 0x1000
+
+Type -> integer
+
+Common Routines
+What are they?
+These are shared parts of code used by multiple sections of a program.
+
+Examples:
+
+A function like print()
+
+A formula used in many parts
+
+A shared subroutine for calculations
+
+Why keep them separate?
+
+To save memory
+
+So you don’t have to load the same code again and again
+
+In overlays:
+When only part of a program is loaded:
+
+The common routines are kept in memory all the time
+
+Each overlay part can use them without reloading
+
+Example with Overlays:
+Let’s say your program has:
+
+Pass 1 (100 KB)
+
+Pass 2 (100 KB)
+
+Common Routines like print(), add(), save() (50 KB)
+
+You load:
+
+Pass 1 + Common Routines -> run Pass 1
+
+Then remove Pass 1
+
+Load Pass 2 + Common Routines -> run Pass 2
+
+Common Routines stay in memory throughout, saving load time and space.
+
+=================================================================
+
+What is Multiple-Partition Allocation?
+It’s a memory management technique where many processes can be in memory at the same time — not limited to fixed-sized blocks like in fixed partitioning.
+
+Key Points:
+1. Partitions = Sections of Memory
+Memory is divided into partitions of different sizes based on process needs.
+
+These partitions are created dynamically when a process arrives.
+
+2. Degree of Multiprogramming
+Means how many programs can run at the same time.
+
+In this method, it depends on available space, not fixed number of partitions.
+
+3. Hole = Free Space
+A hole is a chunk of free memory.
+
+As programs come and go, holes of different sizes are scattered in memory.
+
+4. Allocating Memory
+When a new program (process) comes:
+
+The OS looks for a hole big enough to fit it.
+
+Allocates that space to the program.
+
+5. Freeing Memory
+When a program finishes:
+
+Its space is freed and becomes a hole.
+
+If there's another hole next to it, they are merged to form a bigger hole.
+
+What the OS keeps track of:
+The operating system always manages:
+
+Allocated memory (who's using what part)
+
+Free memory (holes) (how big each one is and where they are)
+
+Example:
+Imagine memory like a long drawer:
+
+|Used|Free|Used|Free|Used|
+
+A new process needs space -> OS finds a big enough  (free spot) and fits it there.
+
+When a process leaves, its  becomes.
+
+If two  are next to each other, they are joined into one big hole.
+
+================================================================
+
+When a program needs memory, the operating system looks for a hole (free space) to put it in. These are 3 common ways to decide which hole to use:
+1.  First-fit
+Find the first hole (from top to bottom) that is big enough.
+
+Fastest method because it stops as soon as it finds a match.
+
+Example:
+Holes: [100KB, 300KB, 200KB]
+Need: 150KB
+-> Allocates the 300KB hole (first one big enough)
+
+2.  Best-fit
+Look through all holes and choose the smallest one that still fits the process.
+
+Saves memory, but is slower (more searching).
+
+Example:
+Holes: [100KB, 300KB, 200KB]
+Need: 150KB
+-> Allocates the 200KB hole (smallest that fits)
+
+3.  Worst-fit
+Look through all holes and choose the largest one.
+
+Leaves the biggest leftover hole.
+
+Can reduce fragmentation in some cases.
+
+Example:
+Holes: [100KB, 300KB, 200KB]
+Need: 150KB
+-> Allocates the 300KB hole (largest)
+
+Summary Table:
+Strategy	How it works	Speed	Wasted space?
+First-fit	First hole that fits	Fast	Medium
+Best-fit	Smallest hole that fits	Slower	Least wasted
+Worst-fit	Largest hole	Slower	Most wasted
+
+===============================================================
+
+1. External Fragmentation
+The total free memory is enough, but it's scattered in small pieces.
+
+The program can’t fit because there’s no single big enough block.
+
+Example:
+
+Free memory: 100KB + 200KB + 300KB (spread out)
+
+Program needs 500KB
+Total free = 600KB
+But no single 500KB chunk, so the program can’t be placed
+
+It’s like having enough money in different pockets, but not enough in any one pocket to buy something.
+
+2. Internal Fragmentation
+A program is given more memory than it needs (to fit into a fixed-size partition).
+
+The extra memory is wasted inside the allocated space.
+
+Example:
+
+Partition size = 100KB
+
+Program needs = 90KB
+
+Wasted = 10KB (can’t be used)
+
+It’s like booking a whole room for yourself when you only need half of it — the rest is unused.
+
+Summary:
+Type	Cause	Problem
+External Fragmentation	Free memory is in small scattered chunks	Can’t place large programs
+Internal Fragmentation	Extra memory inside assigned partition	Wasted space within allocated memory
+
+==============================================================
+
+What is Swapping?
+When there's not enough RAM (main memory) to keep all running programs (processes) inside.
+
+So, the extra processes are temporarily moved (swapped) to the disk.
+
+This frees up RAM for other processes.
+
+Think of it like:
+
+You have a small table to work on (RAM). If you have too many books (programs), you place some on a shelf (disk) and bring them back when needed.
+
+Types:
+Fully Swapping: Entire process is moved in/out of memory.
+
+Partially Swapping / Virtual Memory: Only the needed parts (pages) are moved.
+
+Example: Round Robin Scheduling
+In this scheduling:
+
+Each process gets a small time to run (called a time quantum).
+
+When its turn ends, another process gets to run.
+
+With Swapping:
+
+A process is running.
+
+Its quantum ends.
+
+The process is swapped out to disk (to save memory).
+
+Another process is swapped in from the disk to memory and starts running.
+
+Summary Table:
+Concept	Meaning
+Swapping	Moving processes between RAM and disk to manage memory
+Fully Swapping	Entire process is moved in/out
+Virtual Memory	Only parts of a process are moved in/out (more efficient)
+Use Case	Used when too many processes can't fit into RAM at once
+Example	Round Robin swaps out the current process and swaps in the next one
+
+===========================================================================
+
+Situation Overview:
+We have processes: A, B, and D
+
+Process D has higher priority
+
+Process A has lower priority
+
+Memory is limited — so we use swapping (move processes in and out of memory)
+
+Scenario:
+D is of higher priority
+-> So, if D needs to run, it should be in memory.
+
+A is of lower priority
+-> It can be swapped out if needed.
+
+Now:
+B exits (it was using some memory)
+-> So some memory is now free.
+
+Since memory is available now:
+-> A is swapped back in (loaded from disk to memory)
+
+Final Result:
+D stays in memory (because it’s more important)
+
+A gets a chance to come back because B is done and freed memory
+
+Swapping helps manage memory between high/low priority processes
+
+=================================================================
+
+Compaction
+Sometimes memory has free spaces (holes) scattered between used areas.
+
+Compaction means: moving processes around to group all the free space together in one block.
+
+This helps us fit a new process in memory.
+
+Problem:
+Compaction needs the CPU to pause everything and rearrange memory, which takes time (overhead).
+
+Important:
+Compaction only works if the program’s addresses are flexible (relative).
+If the program uses fixed addresses, we can’t move it, so compaction won’t work.
+
+How Much Memory Should a Process Get?
+If memory is allocated statically (known before running):
+
+OS knows exactly how much memory the program needs:
+Code + Variables
+
+If memory is allocated dynamically (e.g. using new or malloc in C/C++):
+
+The memory needs can grow during execution.
+
+So, OS needs to handle growth smartly.
+
+When a Process Grows
+Processes sometimes need more memory (e.g., more variables, bigger data).
+If there’s a hole (free space) next to it -> Allow it to grow.
+
+If another process is next to it -> It can’t grow easily.
+
+Options:
+
+Move it to a bigger hole
+
+Swap out other processes to make space
+
+If not possible, the process:
+
+Must wait
+
+Or be killed (worst case)
+
+Tip: Give Extra Memory
+If we expect the process to grow:
+
+Give it extra memory in advance
+
+This avoids moving or killing it later
+
+Example:
+
+Process A	Actual Used	Room for Growth
+Stack	Growing downward
+Data/Heap	Growing upward
+
+Processes with Two Growing Segments
+Processes typically have:
+
+Data segment (Heap): grows upward
+
+Stack segment: grows downward
+
+If these grow too much and meet in the middle:
+
+Process crashes or
+
+OS must:
+
+Move it to a larger hole
+
+Swap it out
+
+Or Kill it (last option)
+
+Summary:
+Memory management is hard because processes can grow, and memory may be fragmented.
+
+OS tries to:
+
+Keep free memory organized
+
+Allow growth when possible
+
+Prevent crashes by planning ahead
+
+===================================================================
+
+What is a Page Table?
+A page table is used in operating systems to map virtual addresses to physical memory addresses. Think of it as a translator that helps the CPU find where data is stored in RAM.
+
+Types of Page Table Structures:
+1. Hierarchical Paging (Multi-level Paging)
+Problem: For large memory, the page table becomes too big to fit in memory.
+
+Solution: Break the page table into smaller pieces — like a book with chapters.
+
+How it works:
+
+You use the first part of the virtual address to find the first-level table.
+
+That gives you the address of a second-level table.
+
+The second-level table tells you where the actual page is in memory.
+
+Advantage: Saves memory by loading only needed parts of the page table.
+
+2. Hashed Page Table
+Used when virtual address space is very large (like in 64-bit systems).
+
+How it works:
+
+It uses a hash function to find the page entry.
+
+All pages with the same hash are stored in a linked list (called a bucket).
+
+Advantage: Fast lookup for large address spaces.
+
+3. Inverted Page Table
+Normal page tables have one entry for each virtual page.
+
+Inverted page tables have one entry for each physical page in memory.
+
+How it works:
+
+Each entry tells you which process and which virtual page is using that physical page.
+
+To find a virtual-to-physical mapping, the system must search this table.
+
+Advantage: Saves memory because there's only one entry per physical page.
+
+Disadvantage: Slower, since it needs to search the table.
+
+Quick Comparison
+Type	Saves Space	Fast Lookup	Good for
+Hierarchical Paging		 (usually)	Large memory systems
+Hashed Page Table			64-bit address space
+Inverted Page Table		 (can be slow)	Memory-constrained systems

@@ -1,0 +1,70 @@
+Q: Dos and ddos in easy words?
+------------------------------
+DoS (Denial of Service)
+A DoS attack is when a hacker floods a website or a server with too much traffic (fake requests) so that it slows down or stops working. Imagine a shop where too many fake customers enter and block real customers from getting in.
+
+DDoS (Distributed Denial of Service)
+A DDoS attack is like a DoS attack but much stronger. Instead of one hacker, multiple computers (often infected with a virus) are used to attack a website or server at the same time. It's like a huge crowd of fake customers blocking a shop entrance from different directions, making it impossible for real customers to enter.
+
+Key Difference
+DoS = One computer attacks.
+DDoS = Many computers attack together.
+Both attacks aim to make a website or service unavailable to real users.
+
+Q: How one computer attack with many requests?
+----------------------------------------------
+A single computer can launch a DoS (Denial of Service) attack by rapidly sending a massive number of requests to a website or server. This overwhelms the target, making it slow or completely unresponsive.
+1. Sending Fake Traffic
+The attacker writes a script or uses a tool (like LOIC or HULK) to send thousands or millions of fake requests to the server in a short time. The server struggles to process them, affecting real users.
+
+2. Exploiting Weaknesses
+Some DoS attacks exploit server vulnerabilities, such as:
+
+Ping Flood: Sending too many "ping" requests (ICMP packets).
+SYN Flood: Sending incomplete connection requests, using up server resources.
+HTTP Flood: Sending too many webpage requests at once.
+3. Consuming Bandwidth or Resources
+Since the server has limited processing power and bandwidth, a flood of requests can slow it down or crash it completely.
+
+Limitations of a Single Computer in a DoS Attack
+A single machine has limited internet speed and processing power, so DoS attacks are less powerful than DDoS attacks, where thousands of infected computers (botnets) attack together.
+
+Q: And ddos?
+------------
+How DDoS (Distributed Denial of Service) Works
+A DDoS attack is like a DoS attack but much stronger because it uses many computers to attack a website or server at the same time. These attacking computers are usually part of a botnet (a network of infected devices controlled by a hacker).
+
+Steps of a DDoS Attack
+1. Creating a Botnet (Zombie Computers)
+Hackers infect thousands (or millions) of devices with malware.
+These devices (computers, routers, IoT devices, etc.) become part of a botnet (robot network).
+The owners of these devices usually don’t know their device is being used for an attack.
+2. Sending Massive Traffic to the Target
+The hacker commands all the infected devices to flood a website or server with huge amounts of requests at the same time.
+This can include fake login attempts, continuous page refreshes, or data requests to overload the system.
+3. Overloading the Target Server
+The website or server struggles to handle so many requests.
+It becomes slow, crashes, or completely stops working, making it unavailable to real users.
+Types of DDoS Attacks
+Volume-Based Attacks – Flooding the target with massive traffic (e.g., UDP flood, ICMP flood).
+Protocol Attacks – Exploiting server weaknesses (e.g., SYN flood).
+Application Layer Attacks – Targeting web applications (e.g., HTTP flood).
+Key Differences Between DoS and DDoS
+Feature	DoS	DDoS
+Number of Attackers	One computer	Many computers (botnet)
+Power of Attack	Limited	Very strong
+Difficulty to Stop	Easier	Harder (attacks come from multiple locations)
+Speed of Attack	Slower	Much faster
+DDoS attacks are harder to stop because the traffic comes from different IP addresses worldwide, making it difficult to block without advanced security measures.
+
+Q: In dos can we use multiple devices like ddos?
+------------------------------------------------
+A DoS (Denial of Service) attack typically involves just one device. However, if you use multiple devices intentionally, it becomes a DDoS (Distributed Denial of Service) attack because multiple sources are involved in flooding the target.
+
+Can You Use Multiple Devices in a DoS Attack?
+If you manually use multiple computers, it is technically not a pure DoS attack anymore—it’s closer to a small-scale DDoS attack because multiple sources are involved.
+A true DoS attack comes from a single system.
+When Does It Become a DDoS Attack?
+If you control multiple devices to attack a server, it becomes a DDoS attack because traffic is coming from multiple locations.
+A DDoS attack usually involves a botnet, where hackers take over thousands of devices.
+So, while you can use multiple devices manually, the attack is no longer considered a single-source DoS attack—it becomes a form of DDoS instead.

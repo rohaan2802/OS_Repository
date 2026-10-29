@@ -1,0 +1,228 @@
+Characters:
+L = Low priority task (cleaning robot)
+
+H = High priority task (astronaut needing the cleaning robot’s tool)
+
+M = Medium priority task (maintenance crew doing other work)
+
+What Happened Without Priority Inheritance:
+L starts working and takes a tool (shared resource).
+
+Suddenly, H arrives and says: “I need that tool now!”
+
+But L has it, so H must wait.
+
+Meanwhile, M comes and says: “I have work too!” and since it has higher priority than L, it starts working.
+
+Now L is stuck, can’t finish, so H stays stuck too, because L can’t give up the tool while M is running!
+
+M doesn't know H is waiting, so it just keeps running.
+
+This is called priority inversion.
+
+Now with Priority Inheritance:
+When H waits for L, we temporarily give L the priority of H.
+
+So now, L has high priority, and M cannot interrupt L anymore.
+
+L finishes quickly, gives the tool back, and now H can continue.
+
+Problem solved!
+
+Why L was giving up for M before?
+Because:
+
+L had low priority, so any medium task like M could run before it.
+
+CPU always runs the highest priority task.
+
+H is waiting, not running — so L doesn’t get a chance to finish and release the resource.
+
+In short:
+Without priority inheritance:
+L is too weak -> M cuts in -> H keeps waiting.
+
+With priority inheritance:
+L becomes strong (inherits H's power) -> finishes fast -> H runs -> M waits its turn.
+
+Q: As H also has highest priority than L so why it not gives it before M comes?
+----------------------------------------------------------------------
+Clearing it up step by step in very simple words:
+
+“H (high priority) is waiting for a resource held by L (low priority). So why doesn't the system let L finish before M (medium priority) even starts?”
+
+Key Idea:
+Because the CPU only runs tasks that are ready — and H is not ready.
+
+L (Low priority) is using a resource (like a lock).
+
+H (High priority) comes and says: “I want that resource!”
+
+But H can’t continue, because it needs the resource L is holding.
+
+So H is put to sleep (it's waiting).
+
+Now, L should keep running to release the resource, right?
+
+But M (Medium priority) wakes up and is ready to run.
+
+The CPU says: “Who’s the highest ready task?”
+-> Answer: M (since H is asleep, L is low).
+
+So M gets the CPU, and L is paused.
+
+L can’t finish, so H keeps waiting.
+
+Problem:
+The system only looks at who’s ready to run now, not who’s waiting.
+
+That’s why:
+
+M runs instead of L, even though H is more important.
+
+This causes priority inversion: a high-priority task is stuck because the CPU favors a medium one.
+
+Solution (Priority Inheritance):
+When the system sees that:
+
+H is waiting for L, and
+
+L is blocking H,
+it boosts L’s priority to match H’s.
+
+So now:
+
+L has high priority.
+
+CPU picks L over M.
+
+L finishes, releases the resource.
+
+H wakes up and runs.
+
+M waits its turn — problem solved!
+
+Simple Summary:
+Task	Can Run?	Why?
+H (High)	 No	Waiting for resource
+M (Medium)	 Yes	Ready and not blocked
+L (Low)	 Yes	But paused by M unless boosted
+
+Without priority inheritance -> M runs first
+With priority inheritance -> L runs first to help H
+
+Q: Means whenever L is ready to leave the resource then M is ready to run?
+----------------------------------------------------------------------
+
+Situation Recap (in your words):
+“Whenever L is ready to release the resource, M is ready to run.”
+
+Characters:
+L (Low priority) – using the resource.
+
+H (High priority) – needs the resource.
+
+M (Medium priority) – doing unrelated work, but has higher priority than L.
+
+What Actually Happens:
+L starts and takes the resource.
+
+H arrives, needs the same resource -> waits.
+
+Now L should keep running to finish and release the resource for H.
+
+But then M becomes ready (not earlier — it just happens any time!).
+
+CPU checks:
+
+H:  Can't run (waiting).
+
+M:  Ready.
+
+L:  Ready, but lower priority than M.
+
+So CPU runs M, not L.
+-> This delays L.
+-> Which delays H.
+-> This is priority inversion!
+
+Priority Inheritance Fix:
+System sees H is waiting on L.
+
+Temporarily boost L’s priority to match H.
+
+Now L > M -> L runs, releases resource.
+
+H runs next.
+
+M has to wait its turn.
+
+Key Point:
+M doesn’t “always” become ready when L is about to finish — it can become ready at any time. But if M is ready and L is not boosted, M runs before L, which causes problems.
+
+Q: Why H is not in ready state when it is in new stae and also how M get in ready state while the resource is not free?
+----------------------------------------------------------------------
+
+Your Questions:
+Why is H not in the "ready" state?
+
+How does M get in the "ready" state if the resource is not free?
+
+First: What do these states mean?
+State	What it means
+New	Just created, not yet scheduled
+Ready	Waiting to be given CPU (not blocked)
+Running	Currently using CPU
+Waiting/Blocked	Waiting for some event (like resource becoming free)
+
+1. Why is H not in the ready state?
+Because:
+
+H needs a resource that L is holding.
+
+Until that resource is free, H can’t do anything.
+
+So H goes into the waiting (or blocked) state, not ready.
+
+H is not waiting for CPU, it’s waiting for the resource.
+Only ready tasks can be picked by the CPU.
+
+2. How can M be ready if the resource is not free?
+Because:
+
+M does not need that resource!
+
+M is doing something else entirely.
+
+So M is ready to run — it just needs CPU time.
+
+M has no problem, it’s not blocked.
+
+Example (real life analogy):
+Imagine:
+
+There’s one printer in the office (shared resource).
+
+L is using the printer.
+
+H comes and says “I also need the printer” -> H has to wait. (Blocked)
+
+M just wants to send emails -> it doesn't need the printer -> M is ready.
+
+The Problem (Priority Inversion):
+M gets the CPU and keeps running.
+
+L is paused (lower priority).
+
+H is stuck (waiting for L).
+
+Result: High-priority H is delayed because of M.
+
+Solution: Priority Inheritance
+Let L inherit H’s high priority so it runs before M, releases the resource, and H can continue.
+
+Summary:
+Process	Needs Resource?	State
+H	Yes	Blocked (Waiting)
+L	Yes (has it)	Ready (or Running if CPU allows)
+M	No	Ready

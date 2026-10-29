@@ -1,0 +1,53 @@
+Q: Diff b/w docker and vm?
+--------------------------
+Docker and Virtual Machines (VMs) are both virtualization technologies, but they have key differences in how they operate and use system resources.
+1. Architecture
+Docker: Uses containerization; shares the host OS kernel and isolates applications using containers.
+VM: Uses hardware-level virtualization; each VM has its own OS (called a guest OS) running on a hypervisor.
+2. Resource Usage
+Docker: Lightweight, as containers share the host OS; consumes fewer system resources.
+VM: Heavy, as each VM needs a separate OS; requires more memory and storage.
+3. Performance
+Docker: Faster startup, as containers don’t require booting a full OS.
+VM: Slower startup, as each VM needs to boot its OS.
+4. Isolation
+Docker: Provides process-level isolation but shares the same OS kernel, so security risks exist.
+VM: Provides full isolation, as each VM has its own OS, making it more secure.
+5. Portability
+Docker: Highly portable; can run on any system with Docker installed.
+VM: Less portable; requires compatible hypervisors and OS configurations.
+6. Use Cases
+Docker: Best for microservices, application deployment, and development environments.
+VM: Best for running multiple OS instances, legacy applications, and full system virtualization.
+7. Example Tools
+Docker: Uses Docker Engine for container management.
+VM: Uses VMware, VirtualBox, Hyper-V, KVM, etc. for virtualization.
+Conclusion
+If you need fast, lightweight application deployment, use Docker.
+If you need full OS-level isolation and flexibility, use a VM.
+
+Q: So how docker runs the linux based application on windows, means we enclose the dependencies of that application of linux based in image and that image can run on windows by using linux base dependencies and the image was created in linux based syste?
+----------------------------------------------------------------------
+1. Docker Uses a Lightweight Linux VM on Windows
+Windows does not natively support the Linux kernel, which is required for running Linux-based containers.
+Docker for Windows runs Linux containers inside a lightweight virtual machine called WSL 2 (Windows Subsystem for Linux 2) or Hyper-V (older versions).
+This lightweight VM provides the Linux kernel so that Linux-based images can run seamlessly on Windows.
+2. How Docker Runs Linux Containers on Windows
+When you pull a Linux-based Docker image (e.g., Ubuntu, Nginx, or MySQL), it contains:
+The application code
+The required dependencies (like libraries, tools)
+A lightweight Linux file system (like Alpine, Ubuntu, etc.)
+The container runs inside Docker, which leverages the Linux VM to execute the image, even though the host is Windows.
+3. Process Flow
+You create a Docker image on a Linux system.
+The image contains all dependencies and configurations needed for the application.
+You transfer the image to a Windows machine with Docker Desktop installed.
+Docker uses WSL 2 (or Hyper-V) to run the Linux-based application inside a lightweight Linux environment.
+The application runs as if it were in a native Linux system.
+4. Example: Running a Linux Container on Windows
+sh
+docker run -it ubuntu bash
+This runs an Ubuntu-based container inside Windows.
+Even though Windows is the host OS, Docker uses WSL 2 to provide a Linux environment.
+Key Takeaway
+Docker does not convert Linux applications to run natively on Windows. Instead, it uses a lightweight Linux VM inside Windows to emulate a Linux environment and execute the container.

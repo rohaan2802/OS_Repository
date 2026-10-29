@@ -1,0 +1,129 @@
+Q: Synchronous and asynchronous transmission and use of synchronous technology in asynchronous vice versa?
+----------------------------------------------------------------------
+
+Synchronous Transmission
+Definition: Data is sent at regular, timed intervals. Sender and receiver are synchronized with a shared clock or timing signal.
+
+Example: Video calls, live TV broadcasting, or communication between computers over a network where timing is crucial.
+
+Asynchronous Transmission
+Definition: Data is sent when ready, without relying on a shared clock. Each data piece (like a byte) is framed with start and stop bits to signal its beginning and end.
+
+Example: Sending emails, texting (SMS), or serial communication (like RS-232 protocol).
+
+Using Synchronous Technology in Asynchronous Communication
+Example: USB communication.
+
+USB is technically asynchronous at the logical data level (devices send data when ready), but it uses synchronous transmission at the electrical level — data is sent using a clocked signal.
+
+Explanation: Even though the higher protocol behaves asynchronously, the hardware relies on clocked (synchronous) transmission to maintain high speed and accuracy.
+
+Using Asynchronous Technology in Synchronous Communication
+Example: Buffering in video streaming.
+
+Video streaming is synchronous (viewers watch in real time), but asynchronous data transfers are used to pre-load video chunks ahead of time to avoid buffering interruptions.
+
+Explanation: Asynchronous transmission allows flexibility and reliability, even though the service (streaming) appears continuous and synchronized.
+
+Q: Video call uses asynchronous technology?
+--------------------------------------------
+Synchronous aspect: The video and audio must be delivered in real-time to keep the conversation flowing naturally. This is why we say video calls are synchronous communication at the user level — you expect immediate response without delay.
+
+Asynchronous technology underneath:
+
+The network (like the internet) often sends video and audio data in packets using protocols such as UDP or RTP. These packets can arrive late, out of order, or even get lost — and the system has to handle that.
+
+These packets are sent asynchronously, meaning there isn’t a perfect continuous flow — instead, data is sent as ready and received as it comes.
+
+Summary:
+
+User experience = synchronous (real-time communication)
+
+Network transmission = asynchronous (packet-based)
+
+So, yes, asynchronous transmission happens inside video calls, even though the goal is to maintain a synchronous experience!
+
+Q: Means in asynchronous data packet may lost?
+----------------------------------------------
+Exactly — in asynchronous transmission, data packets can be lost.
+
+In asynchronous communication over networks (like the internet), data is often sent using protocols like UDP (User Datagram Protocol).
+
+UDP sends packets without checking if they arrived safely — it's "fire and forget."
+
+If packets are delayed, lost, or corrupted, they may not be resent automatically.
+
+This is acceptable for things like video calls, live streams, or online games, where speed is more important than perfect accuracy. Small losses are better than big delays.
+
+By contrast, protocols like TCP (Transmission Control Protocol) ensure that lost packets are resent — but TCP is slower, so it's used for things like web browsing or emails.
+
+Q: So udp is asynchronous?
+--------------------------
+UDP is asynchronous.
+
+Here’s why:
+
+UDP (User Datagram Protocol) sends data without waiting for the receiver to confirm it got the message.
+
+There’s no connection setup, no checking for packet order, no resending if packets are lost.
+
+Each packet is sent independently — the sender just sends, and the receiver gets whatever arrives.
+
+Timing between packets isn't strictly controlled — it's "send when ready," not "send in a synchronized flow."
+
+Because of this, UDP is considered asynchronous transmission — it's fast, but not reliable like TCP.
+
+Summary:
+
+UDP = asynchronous, fast, can lose packets.
+
+TCP = synchronous-like (connection-oriented), slower, guarantees delivery.
+
+Q: So in WhatsApp chat which protocol is used?
+----------------------------------------------
+In WhatsApp chat (text messaging), the main protocol used is TCP, not UDP.
+
+Here’s why:
+
+WhatsApp messages (text, images, documents) must be delivered reliably and in order.
+
+TCP ensures that if any packet is lost, it will be resent, and messages are reassembled correctly.
+
+WhatsApp uses end-to-end encryption (through the Signal Protocol), which also needs reliable delivery — encryption demands that no parts of the message are missing.
+
+Summary:
+
+WhatsApp chat = TCP (reliable, ordered, guaranteed delivery).
+
+WhatsApp calls (voice/video) = mainly UDP (for faster real-time communication, tolerating small packet loss).
+
+Would you also like me to quickly explain what happens during WhatsApp voice or video calls at the protocol level?
+
+Q: So Whatsapp chat is asynchronous but uses synchronous technology?
+--------------------------------------------------------------------
+Let me explain it clearly:
+
+WhatsApp chat (text messaging) is asynchronous communication from the user’s point of view.
+
+You send a message whenever you want.
+
+The receiver may reply immediately or hours later — there's no real-time requirement.
+
+So the communication behavior is asynchronous.
+
+However, WhatsApp uses synchronous technology underneath — specifically TCP, which creates a synchronized, reliable connection between devices.
+
+TCP ensures that all parts of the message arrive, correctly ordered, without loss.
+
+It synchronizes the sending and receiving processes at the technical level.
+
+Summary:
+
+Aspect	WhatsApp Chat
+User experience	Asynchronous
+Technology used	Synchronous (TCP)
+In short:
+
+Chat = asynchronous communication
+
+Technology (TCP) = synchronous transmission

@@ -1,0 +1,516 @@
+What is Scheduling?
+In computers, scheduling means choosing which process or task should run on the CPU (brain of the computer) and for how long.
+
+1. Non-Preemptive Scheduling
+Once a process starts running, it keeps running until it finishes or gives up the CPU by itself (like waiting for input).
+
+No one can interrupt it in the middle.
+
+Example:
+Imagine you’re at a barber shop.
+Only one customer at a time, and once the barber starts cutting someone’s hair, he finishes completely before moving to the next person — no interruptions.
+
+2. Preemptive Scheduling
+The CPU can take back control from a running process, even if it's not finished.
+
+It switches to another process, usually if:
+
+Time slice is over
+
+A higher-priority process arrives
+
+Example:
+Now imagine a hospital.
+If a doctor is treating a patient and an emergency case comes in, the doctor might pause the current treatment and handle the emergency first.
+
+Comparison Table
+Feature	Non-Preemptive	Preemptive
+CPU control	Given up voluntarily	Can be taken by force
+Interruptions	Not allowed	Allowed
+Simpler to implement	Yes	No (more complex)
+Responsiveness	Slower	Faster (good for real-time systems)
+Real-Life Use Cases:
+Non-Preemptive: Simple embedded systems, older OS schedulers.
+
+Preemptive: Modern OS (Windows, Linux), mobile apps, games.
+
+===============================================================
+
+What is Turnaround Time?
+Turnaround Time = Total time taken by a process from the moment it arrives to the moment it finishes.
+
+It includes:
+
+Waiting time (time spent in queue)
+
+Execution time (time spent on CPU)
+
+Any delay (like I/O)
+
+Formula:
+Turnaround Time = Completion Time - Arrival Time
+Real-Life Example:
+Imagine you're at a bakery :
+
+You arrive at 10:00 AM
+
+You get your bread at 10:15 AM
+
+Turnaround Time = 15 minutes
+
+It includes:
+
+Time you waited in line
+
+Time it took to pack your bread
+
+Example in Scheduling:
+Process	Arrival Time	Burst Time	Completion Time	Turnaround Time
+P1	0 ms	5 ms	5 ms	5 - 0 = 5 ms
+P2	2 ms	3 ms	8 ms	8 - 2 = 6 ms
+Summary:
+Turnaround Time tells us how long a process stays in the system — from the moment it enters until it’s completely done.
+
+=============================================================================
+
+What is Burst Time?
+Burst Time is the time a process needs the CPU to finish its work — without any interruptions.
+
+Think of it as:
+
+"How long will this process take to run on the CPU, if it gets the CPU right now and uses it continuously?"
+
+Real-Life Example:
+You're baking a cake
+
+It takes 30 minutes in the oven.
+
+That 30 minutes is your burst time (no waiting, no breaks — just cooking time).
+
+Example in Scheduling:
+Process	Burst Time
+P1	4 ms
+P2	7 ms
+P3	2 ms
+That means:
+
+P1 needs 4 milliseconds on CPU
+
+P2 needs 7 milliseconds, and so on...
+
+Used For:
+Calculating Turnaround Time
+
+Scheduling decisions (like in Shortest Job First)
+
+Related Terms:
+Burst Time: CPU time needed by process
+
+Arrival Time: When the process enters the system
+
+Waiting Time: Time spent waiting in the queue
+
+Turnaround Time: Total time from arrival to completion
+
+======================================================================
+
+First, What’s a Ready Queue vs a Blocked Queue?
+Term	Meaning
+Ready Queue	List of processes waiting to use the CPU
+Blocked Queue	List of processes that are waiting for something else, like I/O
+Now, What’s Waiting Time?
+Waiting Time = Time a process spends in the Ready Queue, not running, just waiting for the CPU.
+
+It does NOT include:
+
+Time spent doing I/O
+
+Time spent in Blocked State
+
+So your statement is correct:
+"Scheduling Algorithm does not affect waiting time in Blocked Queue — it only affects waiting time in Ready Queue."
+
+Why?
+
+Because the CPU scheduler only decides:
+
+“Which process in the Ready Queue should run next?”
+
+It has no control over how long a process waits for:
+
+Disk read/write
+
+Keyboard input
+
+Network response, etc.
+
+Formula Reminder:
+Waiting Time = Turnaround Time - Burst Time
+(because turnaround includes everything — and burst is just actual CPU time, so the rest is waiting)
+
+Quick Example:
+Process	Arrival	Burst	Ready Queue Waiting
+P1	0 ms	5 ms	0 ms
+P2	1 ms	3 ms	4 ms (waited while P1 ran)
+If P2 was doing I/O in between, that I/O wait time doesn't count in the Waiting Time.
+
+===================================================================================
+
+Optimization Criteria in Scheduling
+Operating systems try to optimize performance using different criteria — based on the type of system (Batch or Interactive).
+
+1. Turnaround Time
+Turnaround Time = Completion Time – Arrival Time
+
+It's useful for batch systems (e.g., printing 1000 pages).
+
+It measures how long a process takes to finish completely.
+
+Not good for interactive systems (like games, web apps), where users want quick feedback — not just a fast finish.
+
+2. Response Time
+Response Time = First time CPU starts running the process – Submission Time
+
+It measures how fast the system reacts after a user gives input.
+
+This is very important for interactive systems.
+
+Real-life Example:
+You press a key in a game
+
+You want the game to respond instantly, even if the whole process (game loop) keeps running for hours.
+
+That delay between pressing the key and the character moving = Response Time
+
+Summary Table:
+Criteria	Good For	What It Measures
+Turnaround Time	Batch systems	Total time from start to finish
+Response Time	Interactive systems	How quickly the system reacts to input
+Takeaway:
+In interactive systems, we care more about Response Time than Turnaround Time.
+
+A process might:
+
+Start producing output quickly (good response time),
+
+But still take longer overall to finish (long turnaround time).
+
+======================================================================================
+
+The formula again:
+Response Time = First time CPU starts running the process – Submission Time
+
+What does this mean?
+It measures how quickly the system starts responding after you submit a request (like pressing a key, clicking a button, etc.).
+
+Imagine This Scenario:
+You’re playing a game.
+You press a key at 10:00:00 AM -> that input goes to the system -> the game process is scheduled to handle it.
+
+If the game process starts processing your input at 10:00:01 AM,
+then:
+
+Response Time = 10:00:01 - 10:00:00 = 1 second
+It doesn't matter how long the game keeps running afterward — the response time only measures how soon it starts reacting.
+
+So does pressing a key "start the process" again?
+Not exactly — but close.
+You press a key -> the system detects it.
+
+The keypress event is added to the queue (event queue or ready queue).
+
+The game process is moved to Ready state (if not already running).
+
+When the CPU gives time to that process -> it begins handling the keypress.
+
+The first moment the CPU starts working on your input = "First Response Start Time".
+
+So yes — the process might not be starting from scratch, but it's being scheduled again to handle your new input.
+
+Key Points:
+Processes don’t always start from 0 again — they can go to sleep/waiting state and come back.
+
+Response Time measures how long it takes to start responding, not how long the whole process takes.
+
+=============================================================================================
+
+Q: In non preemptive if the cpu executes process A and A needs the i/o then it goes to blocked state then cpu do what?
+----------------------------------------------------------------------
+In a non-preemptive scheduling system, once a process starts executing, it will run to completion (or until it goes into a blocked state for I/O or other reasons).
+Scenario:
+Process A starts executing.
+
+Process A needs to perform some I/O (for example, it needs to read data from disk or wait for some input).
+
+Process A goes into a blocked state because it's waiting for I/O.
+
+Now, what does the CPU do?
+
+What Happens Next?
+CPU stops executing Process A as it enters the blocked state.
+
+The CPU does not resume Process A until it finishes its I/O operation and is ready again (i.e., transitions from blocked to ready state).
+
+The CPU will pick the next available process in the ready queue to execute. It will pick the next process based on the scheduling algorithm being used (e.g., FCFS, Shortest Job First, etc.).
+
+Key Points:
+Non-preemptive scheduling means the CPU doesn't interrupt the current process. So, Process A continues until it either completes its CPU burst or moves to a blocked state for I/O.
+
+When Process A moves to the blocked state:
+
+The CPU switches to another process that is ready.
+
+The CPU will not return to Process A until it finishes I/O and is back in the ready queue.
+
+Example:
+Let’s say we have processes A and B:
+
+Process	Arrival Time	Burst Time	I/O Required?
+A	0	5	Yes (I/O at time 3)
+B	1	3	No
+Steps:
+
+Process A starts at time 0, and it runs for 3 units (so now it's at time 3).
+
+Process A needs I/O at time 3, so it enters the blocked state.
+
+Process B arrives at time 1 and has no I/O to perform. The CPU picks Process B and starts running it.
+
+Process B finishes at time 4.
+
+After Process B finishes, the CPU checks if Process A has completed its I/O.
+
+If Process A is ready to run again, it moves to the ready queue and will be picked next.
+
+If Process A is still blocked (still waiting for I/O), the CPU picks another ready process (if any).
+
+Summary:
+In non-preemptive scheduling:
+
+When a process moves to the blocked state (e.g., for I/O), the CPU immediately picks the next ready process to run.
+
+The CPU won't return to the blocked process until it's ready to execute again after completing its I/O operation.
+
+Q: During execution of B if process A has free then it switch to A r first complete B?
+----------------------------------------------------------------------
+In non-preemptive scheduling, the CPU does not switch from the currently running process to another process, even if a process becomes ready during execution.
+
+Non-preemptive means that once a process starts running, it will continue running until:
+
+It completes its CPU burst (finishes its execution), or
+
+It goes to a blocked state (waiting for I/O or some other resource).
+
+Process A starts running first.
+
+While Process A is running, Process B arrives.
+
+Process A requires I/O, so it goes into the blocked state.
+
+Process B starts executing and runs for its entire CPU burst without interruption.
+
+The key idea here:
+If Process A becomes ready during the execution of Process B, the CPU will not switch to Process A until Process B completes its execution.
+
+Why?
+
+In non-preemptive scheduling, the current process is allowed to complete its execution (or reach a blocking point) before the CPU moves to another process, even if other processes are ready.
+
+Example:
+Taking this step-by-step with Process A and Process B:
+
+Process	Arrival Time	Burst Time	I/O Required?
+A	0	5	Yes (I/O at time 3)
+B	1	3	No
+Process A starts at time 0.
+
+Process B arrives at time 1, but Process A is already running. In non-preemptive scheduling, the CPU won't switch to B yet.
+
+Process A continues running until time 3, when it needs I/O. So, it goes to the blocked state.
+
+Now, the CPU checks the ready queue, and Process B is ready.
+
+Process B starts running at time 3 and runs for 3 units of time, finishing at time 6.
+
+After Process B completes, the CPU checks if Process A is ready.
+
+If Process A has finished its I/O by this point, it is moved to the ready queue and will be scheduled for execution.
+
+Process A resumes and finishes its execution after time 6.
+
+Key Takeaways:
+In non-preemptive scheduling, the CPU will always finish the currently running process before switching to another process, even if a new process becomes ready.
+
+No context switching happens in the middle of a process’s execution.
+
+This is different from preemptive scheduling, where the CPU can interrupt the currently running process if a higher-priority process becomes ready to run.
+
+===============================================
+
+Static Priority vs. Dynamic Priority
+In scheduling algorithms, processes are often assigned a priority which determines the order in which they will be executed. The difference between static priority and dynamic priority lies in whether the priority of a process changes during its lifetime.
+
+1. Static Priority:
+In static priority scheduling, the priority of a process is set at the time of its creation and remains constant throughout its execution. The priority does not change during the process’s lifetime, and it determines the order of execution based on predefined criteria.
+
+Key Points:
+Fixed priority: Once the process is created, its priority does not change.
+
+Predictable behavior: Since the priority is fixed, it's easier to predict how processes will behave in terms of scheduling.
+
+Simple to implement: The system only needs to compare static priorities to decide the next process to execute.
+
+Example:
+In Priority Scheduling, if Process A has priority 5 and Process B has priority 3, Process A will always run first, unless it is blocked or finished, and will always have higher priority than Process B.
+
+Disadvantage:
+Fairness issue: A high-priority process can monopolize the CPU if it always runs first, potentially starving lower-priority processes.
+
+2. Dynamic Priority:
+In dynamic priority scheduling, the priority of a process can change over time based on certain conditions. These conditions could be things like how long a process has been waiting, how much CPU time it has consumed, or other system factors.
+
+Key Points:
+Variable priority: The priority of a process is not fixed and may change based on factors such as aging, waiting time, or system load.
+
+Fairer scheduling: Dynamic priorities help address issues like starvation, as processes can increase in priority over time if they wait too long.
+
+More complex: The scheduling algorithm has to constantly adjust the priorities of processes.
+
+Example:
+In an Aging mechanism, a process that has been waiting for a long time might have its priority increased to ensure it gets CPU time eventually.
+
+In Multilevel Queue Scheduling, processes might start in one queue (e.g., interactive with higher priority) and then move to another queue (e.g., background with lower priority) as time passes.
+
+Disadvantage:
+Complexity: The priority adjustment mechanism can add complexity to the scheduling algorithm.
+
+Comparison:
+Feature	Static Priority	Dynamic Priority
+Priority Change	Fixed, does not change during process lifetime	Changes based on certain conditions or time
+Fairness	May cause starvation if a low-priority process is never executed	Helps prevent starvation by adjusting priorities
+Complexity	Simple to implement and manage	More complex due to constant priority adjustments
+Example Algorithm	Priority Scheduling	Aging, Multilevel Queue Scheduling, Shortest Job First (SJF)
+Summary:
+Static Priority assigns a fixed priority to each process, and it doesn't change over time. It is simpler but may lead to unfairness or starvation.
+
+Dynamic Priority allows the priority of a process to change based on various factors, making it more adaptable and fair but also more complex.
+
+============================================================
+
+This slide explains Preemptive Shortest Job First (SJF) scheduling (also called Shortest Remaining Time First, SRTF) using an example with four processes.
+
+Given Data:
+Process	Arrival Time	Burst Time
+P₁	0	7
+P₂	2	4
+P₃	4	1
+P₄	5	4
+Preemptive SJF Logic:
+In Preemptive SJF, the process with the shortest remaining time gets CPU priority, and running processes can be preempted if a shorter one arrives.
+
+Timeline Breakdown:
+Time 0-2: Only P₁ has arrived, so it runs.
+
+Time 2: P₂ arrives (remaining time = 4). Since 4 < 5 (P₁'s remaining time), P₂ preempts P₁ and runs.
+
+Time 4: P₃ arrives (burst = 1). It’s the shortest job, so it preempts P₂ and runs.
+
+Time 5: P₃ finishes. P₂ resumes (remaining = 3).
+
+Time 6-7: P₂ runs.
+
+Time 7: P₂ finishes. Now P₄ (burst = 4) and P₁ (remaining = 5) are ready. P₄ runs since it has the shorter remaining time.
+
+Time 11: P₄ finishes. Only P₁ remains.
+
+Time 11-16: P₁ completes the last 5 units.
+
+Completion Times:
+Process	Completion Time	Arrival Time	Waiting Time = (CT - AT - BT)
+P₁	16	0	16 - 0 - 7 = 9
+P₂	7	2	7 - 2 - 4 = 1
+P₃	5	4	5 - 4 - 1 = 0
+P₄	11	5	11 - 5 - 4 = 2
+Average Waiting Time:
+9
++
+1
++
+0
++
+2
+4
+=
+12
+4
+=
+3
+4
+9+1+0+2
+
+ =
+4
+12
+
+ =3
+Average Waiting Time = 3
+
+===========================================
+
+Q: What si the actual formula for waitinmg time Waiting Time = (CT - AT - BT) or Waiting Time = (start process time - arrival tme)?
+----------------------------------------------------------------------
+
+Both formulas are correct, but they are used in different contexts depending on how you're calculating or what information you already have.
+1. Standard Formula (Most Common):
+Waiting
+
+Time
+=
+Completion Time
+−
+Arrival Time
+−
+Burst Time
+Waiting Time=Completion Time−Arrival Time−Burst Time
+This is used after the process has completed.
+
+You need the completion time (CT).
+
+It reflects total time the process spent waiting in the ready queue.
+
+2. Alternative (Start Time Method):
+Waiting
+
+Time
+=
+Start Time
+−
+Arrival Time
+Waiting Time=Start Time−Arrival Time
+This only works if the process starts and finishes without preemption.
+
+For preemptive scheduling, this does not capture total waiting time, because the process might be paused and re-queued.
+
+So this only gives you the initial waiting time, not the total.
+
+For Preemptive Scheduling:
+Since processes may start, pause, and resume:
+
+Use the first formula:
+
+Waiting Time
+=
+Completion Time
+−
+Arrival Time
+−
+Total Execution Time (Burst Time)
+Waiting Time=Completion Time−Arrival Time−Total Execution Time (Burst Time)
+This gives the total time spent waiting, even if there are interruptions.
+
+TL;DR:
+Formula	When to Use	Works for Preemptive?
+CT - AT - BT	After process finishes	 Yes
+Start Time - AT	If process runs without pause	 No
+
+==========================================================================

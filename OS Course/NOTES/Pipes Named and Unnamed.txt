@@ -1,0 +1,288 @@
+Q: Dif b/w named and unnamed pipes?
+-----------------------------------
+The difference between named and unnamed pipes lies in how they are used for interprocess communication (IPC):
+
+1. Named Pipe (FIFO - First In First Out)
+Exists as a file in the filesystem.
+Can be used for communication between unrelated processes.
+Created using the mkfifo command in Linux or CreateNamedPipe in Windows.
+Persistent—remains in the system until manually deleted.
+Can be accessed by multiple processes.
+Example:
+
+mkfifo mypipe  # Create a named pipe
+echo "Hello" > mypipe  # Write to the pipe
+cat < mypipe  # Read from the pipe
+2. Unnamed Pipe (Anonymous Pipe)
+Exists only in memory and cannot be accessed by unrelated processes.
+Typically used for communication between a parent and child process.
+Created using the pipe() system call in Linux.
+Temporary—disappears once the processes terminate.
+Unidirectional by default (data flows in one direction).
+Example in C (parent-child communication):
+
+int fd[2];
+pipe(fd);
+if (fork() == 0) {
+    close(fd[0]);  // Close unused read end
+    write(fd[1], "Hello", 6);
+    close(fd[1]);
+} else {
+    close(fd[1]);  // Close unused write end
+    char buffer[10];
+    read(fd[0], buffer, sizeof(buffer));
+    printf("Received: %s\n", buffer);
+    close(fd[0]);
+}
+Key Differences
+Feature	Named Pipe (FIFO)	Unnamed Pipe
+Existence	Persistent (exists in the filesystem)	Temporary (exists in memory)
+Scope	Can be used by unrelated processes	Only used by related processes (e.g., parent-child)
+Creation	Created using mkfifo	Created using pipe()
+Bidirectionality	Can be bidirectional	Usually unidirectional
+Accessibility	Identified by a name (file)	No name, exists only in memory
+For IPC between related processes, unnamed pipes are efficient. For unrelated processes, named pipes are the better choice.
+
+Q: Means we use 2 way communication in ned pipes and one way in unnamed pipes?
+----------------------------------------------------------------------
+That's mostly correct!
+
+Unnamed Pipes (One-Way Communication by Default)
+Unnamed pipes are typically unidirectional—one process writes, and the other reads.
+If two-way communication is needed, you must create two unnamed pipes (one for each direction).
+Named Pipes (Can Be Two-Way)
+Named pipes (FIFOs) can support bidirectional communication.
+However, in some systems, they may still act as half-duplex (one direction at a time).
+If true full-duplex (simultaneous reading and writing) is needed, two named pipes might be required.
+
+Q: But in both if we can do 2 way communication and if we want synchronously then?
+----------------------------------------------------------------------
+Both named and unnamed pipes can support two-way communication, but achieving synchronous communication requires additional mechanisms like synchronization techniques (blocking, non-blocking I/O, or signals).
+
+Synchronous Communication in Pipes
+For unnamed pipes: You need two pipes (one for each direction). Since pipes are blocking by default, a process will wait if there's no data to read.
+For named pipes: A single named pipe can be used in both directions, but in some cases, two named pipes are used for full-duplex communication.
+How to Achieve Synchronization?
+Blocking Read/Write (Default behavior of pipes)
+The reader process will wait until data is available.
+The writer process will wait if the pipe buffer is full.
+Non-blocking I/O (Using fcntl in Linux)
+Can be used to avoid blocking behavior.
+Using Select/Poll
+Useful when handling multiple pipes in a single process.
+Mutexes or Semaphores (for multi-threaded programs)
+Ensures only one thread accesses the pipe at a time.
+Example: Two-Way Communication Using Unnamed Pipes (Parent-Child, Synchronous)
+include <stdio.h>
+include <unistd.h>
+include <string.h>
+
+int main() {
+    int pipe1[2], pipe2[2]; // Two pipes for bidirectional communication
+    char buffer[100];
+
+    pipe(pipe1); // Parent writes, child reads
+    pipe(pipe2); // Child writes, parent reads
+
+    if (fork() == 0) { // Child process
+        close(pipe1[1]); // Close unused write end of pipe1
+        close(pipe2[0]); // Close unused read end of pipe2
+
+        read(pipe1[0], buffer, sizeof(buffer)); // Read from parent
+        printf("Child received: %s\n", buffer);
+
+        write(pipe2[1], "Hello, Parent!", 15); // Send response
+        close(pipe1[0]);
+        close(pipe2[1]);
+    } else { // Parent process
+        close(pipe1[0]); // Close unused read end of pipe1
+        close(pipe2[1]); // Close unused write end of pipe2
+
+        write(pipe1[1], "Hello, Child!", 14); // Send message
+        read(pipe2[0], buffer, sizeof(buffer)); // Read response from child
+        printf("Parent received: %s\n", buffer);
+
+        close(pipe1[1]);
+        close(pipe2[0]);
+    }
+
+    return 0;
+}
+Example: Two-Way Communication Using Named Pipes (Synchronous)
+Create two named pipes
+mkfifo pipe1 pipe2
+
+Terminal 1 (Process 1)
+echo "Hello from Process 1" > pipe1
+cat < pipe2
+
+Terminal 2 (Process 2)
+cat < pipe1
+echo "Hello from Process 2" > pipe2
+Key Takeaways
+Unnamed pipes need two pipes for two-way communication.
+Named pipes can be bidirectional but may still require two FIFOs for full-duplex.
+Synchronization is handled automatically by blocking read/write, or manually using non-blocking I/O, select, poll, or semaphores.
+
+Q: But how it is different if both works same?
+----------------------------------------------
+Even though both named and unnamed pipes can support two-way communication, they are different in several key ways:
+
+1. Scope of Communication
+Unnamed Pipes: Only work between related processes (parent-child).
+Named Pipes: Work between any two or more processes, even unrelated ones.
+2. Persistence
+Unnamed Pipes: Exist only as long as the processes using them are running. Once the process ends, the pipe disappears.
+Named Pipes: Exist as a file in the filesystem and remain even after processes terminate (until deleted manually).
+3. Identification
+Unnamed Pipes: Identified only by file descriptors, making them temporary and process-specific.
+Named Pipes: Have a filename in the filesystem, allowing any process to access them.
+4. Setup Complexity
+Unnamed Pipes: Need to be created at runtime using pipe(), requiring two pipes for bidirectional communication.
+Named Pipes: Created using mkfifo or mknod, allowing multiple processes to communicate more flexibly.
+5. Use Case Differences
+Feature	Unnamed Pipe	Named Pipe
+Communication	Only between parent-child processes	Between any two or more processes
+Persistence	Temporary (disappears when processes exit)	Persistent (exists in the filesystem)
+Identification	No name, uses file descriptors	Has a name in the filesystem
+Setup	Requires two pipes for bidirectional communication	Can use one pipe (though two are preferred for full-duplex)
+Example Usage	Parent-child communication in a single program	IPC between unrelated processes or even different programs
+So, while they both support two-way communication, their scope, persistence, and ease of use differ. If you're working with related processes, unnamed pipes are fine. But if you need IPC between independent processes, named pipes are the way to go.
+
+Q: Mode switching?
+------------------
+Mode Switching in Operating Systems
+Mode switching refers to the transition between different execution modes in a computer system, typically between user mode and kernel mode. This is essential for enforcing security, stability, and controlled access to system resources.
+
+1. Types of Mode Switching
+a) User Mode to Kernel Mode (Privilege Escalation)
+Occurs when a user process requests a system service, such as file I/O, memory allocation, or hardware access.
+This happens through system calls, interrupts, or exceptions.
+The CPU switches to kernel mode, executes the requested operation, and then switches back to user mode.
+Example:
+When a program calls printf(), it internally uses the write system call, causing a switch to kernel mode.
+
+b) Kernel Mode to User Mode (Privilege Reduction)
+Happens when the OS completes a privileged operation and returns control to the user process.
+The CPU switches back to user mode to ensure the process cannot access critical system resources directly.
+This transition is controlled using the IRET (Interrupt Return) instruction or syscall return mechanisms.
+Example:
+After completing a read() system call, the kernel passes control back to the user application.
+
+c) Process Context Switching (Between User Processes)
+The CPU switches execution between different user processes.
+This happens due to time-sharing (preemptive multitasking) or when a process is waiting for I/O.
+The OS saves the current process’s state (registers, program counter, etc.) and restores another process’s state.
+Example:
+A running process is paused so the CPU can execute another process in a multitasking system.
+
+d) Interrupt Handling (Asynchronous Mode Switch)
+When a hardware device (keyboard, disk, network) sends an interrupt, the CPU switches to kernel mode to execute an interrupt handler.
+Once the interrupt is handled, the CPU resumes execution in user mode or continues a different task.
+Example:
+A keypress on the keyboard triggers an interrupt, switching the CPU to kernel mode to process the input.
+
+2. Why Mode Switching is Necessary?
+Security: Prevents user programs from directly accessing hardware or sensitive system resources.
+Stability: Ensures that a faulty or malicious program cannot crash the entire system.
+Resource Management: The OS controls CPU time, memory access, and I/O operations.
+Concurrency: Allows multiple processes to run efficiently by switching between them.
+3. How Mode Switching Happens?
+The CPU maintains a mode bit:
+
+0 -> Kernel Mode (Full access)
+1 -> User Mode (Restricted access)
+When switching occurs:
+
+User to Kernel Mode:
+Triggered by a system call, hardware interrupt, or exception.
+The CPU saves the current state (registers, stack pointer).
+Switches the mode bit to 0 (kernel mode).
+Executes the OS routine.
+Kernel to User Mode:
+The OS completes its task.
+Restores the user process's state.
+Switches the mode bit to 1 (user mode).
+Resumes execution of the user process.
+
+4. Mode Switching vs. Context Switching
+Feature	Mode Switching	Context Switching
+What is it?	Switching between user mode and kernel mode	Switching between processes
+Triggered by?	System calls, interrupts, exceptions	Process scheduler (preemptive multitasking)
+Overhead	Low (only changes CPU mode)	Higher (saves/restores process states)
+Example	read(), write() system calls	Running process A, then switching to process B
+5. Real-World Example
+User Mode: Running a web browser, media player, or game.
+Kernel Mode: Handling network packets, disk read/write operations, or memory management.
+Switching Example:
+A browser requests a file from disk (fopen() -> system call).
+CPU switches to kernel mode to read the file.
+Once read, the CPU switches back to user mode, returning data to the browser.
+
+Q: Example of related and unrelated proces?
+-------------------------------------------
+Examples of Related and Unrelated Processes
+1. Related Processes
+Definition:
+Processes that share a common ancestry (e.g., parent-child relationship) and can communicate using unnamed pipes, shared memory, or signals.
+
+Example: Parent-Child Process (Related)
+A parent process creates a child process using fork().
+The child process executes a different task but remains related to the parent.
+C Program Example (Using Unnamed Pipe for IPC)
+
+include <stdio.h>
+include <unistd.h>
+include <string.h>
+
+int main() {
+    int fd[2];  // File descriptors for the pipe
+    char buffer[50];
+
+    pipe(fd); // Create an unnamed pipe
+
+    if (fork() == 0) { // Child process
+        close(fd[1]); // Close unused write end
+        read(fd[0], buffer, sizeof(buffer)); // Read data from parent
+        printf("Child received: %s\n", buffer);
+        close(fd[0]);
+    } else { // Parent process
+        close(fd[0]); // Close unused read end
+        write(fd[1], "Hello, Child!", 14); // Send message to child
+        close(fd[1]);
+    }
+
+    return 0;
+}
+Output:
+
+yaml
+Child received: Hello, Child!
+The parent and child are related because they share a common process hierarchy.
+2. Unrelated Processes
+Definition:
+Processes that do not share a common ancestry and run independently. They need named pipes (FIFOs), message queues, sockets, or shared memory to communicate.
+
+Example: Two Unrelated Processes Communicating via Named Pipe (FIFO)
+Process A writes data to a named pipe.
+Process B reads the data from the named pipe.
+Step 1: Create a Named Pipe
+
+mkfifo mypipe
+Step 2: Process A (Writer) - Writes Data to Pipe
+
+echo "Hello from Process A" > mypipe
+Step 3: Process B (Reader) - Reads Data from Pipe
+
+cat < mypipe
+Output:
+
+Hello from Process A
+Process A and Process B are unrelated because they were started independently but communicate through the named pipe.
+Key Differences Between Related and Unrelated Processes
+Feature		Related Processes				Unrelated Processes
+Definition		Have a parent-child relationship		No parent-child relationship
+Example		A parent process creating a child using fork()	Two separate applications communicating
+Communication	Can use unnamed pipes, signals, shared memory	Need named pipes (FIFO), message queues, sockets
+Persistence	Child depends on parent			Independent execution
+Example in Linux	bash executing a child script			firefox communicating with spotify

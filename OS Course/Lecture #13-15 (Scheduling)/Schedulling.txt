@@ -1,0 +1,7 @@
+Multi level feedback queue scheduler first executes processes in Q1, which is given a time quantum of 8 milli-seconds. If a process does not finish within this time, it is moved to the tail of the Q2.The scheduler executes processes in Q2 only when Q1 is empty. The process at the head of the Q2 is given a quantum of 16 milli-seconds. If it does not complete, it is preempted and is put into Q3. Processes in Q3 are run on an FCFS basis, only when Q1 and Q2 are empty.
+The scheduler executes processes in Q2 only when Q1 is empty. 
+A new job enters queue Q1 which is served RR
+     When it gains CPU, job receives 8 milliseconds
+     If it does not finish in 8 milliseconds, job is moved to queue Q2
+ At Q2 job is again served RR and receives 16 additional milliseconds
+      If it still does not complete, it is preempted and moved to queue Q3
