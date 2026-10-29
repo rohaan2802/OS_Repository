@@ -1,0 +1,16 @@
+# Compiled programs and object files
+*.o
+*.out
+*.exe
+a.out
+
+# Linux executables built from the lab sources (no extension)
+OS LAB/**/*
+!OS LAB/**/
+!OS LAB/**/*.*
+
+# Editor and OS files
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
