@@ -19,35 +19,10 @@ My sixth-semester Operating Systems course work – lecture slides, notes and te
 ## Live Links
 
 | What | Link |
-|---|---|
-| Repository | [rohaan2802/OS_Repository](https://github.com/rohaan2802/OS_Repository) |
-| Website (GitHub Pages) | [rohaan2802.github.io/OS_Repository](https://rohaan2802.github.io/OS_Repository/) |
-| Download whole repository (ZIP) | [main.zip](https://github.com/rohaan2802/OS_Repository/archive/refs/heads/main.zip) |
-| Course folder | [OS Course](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course) |
-| Lecture folder | [Lecture #01 (Introduction)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2301%20%28Introduction%29) |
-| Lecture folder | [Lecture #02 (Docker)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2302%20%28Docker%29) |
-| Lecture folder | [Lecture #03 (OS OverView)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2303%20%28OS%20OverView%29) |
-| Lecture folder | [Lecture #04-09 (Processes)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2304-09%20%28Processes%29) |
-| Lecture folder | [Lecture #10-12 (IPC)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2310-12%20%28IPC%29) |
-| Lecture folder | [Lecture #13-14 (Named Pipes)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2313-14%20%28Named%20Pipes%29) |
-| Lecture folder | [Lecture #13-15 (Scheduling)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2313-15%20%28Scheduling%29) |
-| Lecture folder | [Lecture #16-18 (Threads)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2316-18%20%28Threads%29) |
-| Lecture folder | [Lecture #19-22 (Threads & Synchornization)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2319-22%20%28Threads%20%26%20Synchornization%29) |
-| Lecture folder | [Lecture #23-24 (Algorithms)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2323-24%20%28Algorithms%29) |
-| Lecture folder | [Lecture #25-27 (DeadLock & SemaPhores)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2325-27%20%28DeadLock%20%26%20SemaPhores%29) |
-| Lecture folder | [Lecture #29-36 (MemoryManagement)](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lecture%20%2329-36%20%28MemoryManagement%29) |
-| Course folder | [Assignments](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Assignments) |
-| Course folder | [Quizes](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Quizes) |
-| Final project folder | [OS FinalProject](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/OS%20FinalProject) |
-| Final project | [OS_Project_Statement -SP2025.pdf](https://github.com/rohaan2802/OS_Repository/blob/main/OS%20Course/OS%20FinalProject/OS_Project_Statement%20-SP2025.pdf) |
-| Lab folder | [OS LAB](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20LAB) |
-| Lab folder | [LAB MID](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20LAB/LAB%20MID) |
-| Study notes | [NOTES](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/NOTES) |
-| Study notes | [Lectures Summary](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Lectures%20Summary) |
-| Study notes | [Mutex_SemaPhore.txt](https://github.com/rohaan2802/OS_Repository/blob/main/OS%20Course/NOTES/Mutex_SemaPhore.txt) |
-| Study notes | [Scheduling.txt](https://github.com/rohaan2802/OS_Repository/blob/main/OS%20Course/NOTES/Scheduling.txt) |
-| Other useful path | [Books](https://github.com/rohaan2802/OS_Repository/tree/main/OS%20Course/Books) |
-| Other useful path | [LICENSE](https://github.com/rohaan2802/OS_Repository/blob/main/LICENSE) |
+|------|------|
+| Repository | [https://github.com/rohaan2802/OS_Repository](https://github.com/rohaan2802/OS_Repository) |
+| Website (GitHub Pages) | [https://rohaan2802.github.io/OS_Repository/](https://rohaan2802.github.io/OS_Repository/) |
+| Download whole repository (ZIP) | [https://github.com/rohaan2802/OS_Repository/archive/refs/heads/main.zip](https://github.com/rohaan2802/OS_Repository/archive/refs/heads/main.zip) |
 
 ---
 

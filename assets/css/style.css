@@ -287,9 +287,11 @@ section h2{font-size:clamp(1.4rem,1rem + 2vw,2.6rem)}
 .shot img{object-position:left top}
 @media (max-width:400px){.brand{min-width:0;flex:1 1 auto}.brand span:not(.brand-logo){font-size:1rem;overflow:hidden;text-overflow:ellipsis;min-width:0}}
 
-.links-table{max-width:100%;border-radius:var(--radius)}
-.links-table table{min-width:0;table-layout:fixed;width:100%}
-.links-table th:first-child,.links-table td:first-child{width:42%}
+.links-table{width:100%;max-width:none;border-radius:var(--radius)}
+.links-table table{min-width:0;max-width:none;table-layout:fixed;width:100%}
+.links-table td,.links-table th{padding:.7rem 1rem}
+.links-table th:first-child,.links-table td:first-child{width:34%}
+@media(max-width:600px){.links-table th:first-child,.links-table td:first-child{width:42%}}
 .links-table td,.links-table th{overflow-wrap:anywhere;word-break:break-word;vertical-align:top}
 .links-table a{font-weight:600}
 @media(max-width:480px){.links-table td,.links-table th{padding:.55rem .6rem;font-size:.9rem}}
